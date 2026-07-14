@@ -1,19 +1,5 @@
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
+import MedusaApp from '@/components/MedusaApp';
 
 export default function Home() {
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        minHeight: "100vh",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Typography variant="h4" component="h1">
-        Hello, MUI
-      </Typography>
-    </Box>
-  );
+  return <MedusaApp />;
 }
