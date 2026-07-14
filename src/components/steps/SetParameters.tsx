@@ -1,5 +1,5 @@
 'use client';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -15,7 +15,7 @@ import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutl
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { FormValues, UploadedFile } from '@/types';
 
@@ -24,146 +24,55 @@ interface Props {
   untFile: UploadedFile | null;
   formValues: FormValues;
   onFormChange: (field: keyof FormValues, value: string | boolean) => void;
-  onFileDrop: (type: 'trt' | 'unt', file: File) => void;
+  onBack: () => void;
   onNext: () => void;
 }
 
-function FileDropZone({
-  label,
-  file,
-  onDrop,
-  onChoose,
-}: {
-  label: string;
-  file: UploadedFile | null;
-  onDrop: (f: File) => void;
-  onChoose: () => void;
-}) {
-  const [dragging, setDragging] = useState(false);
-
+function FileSummary({ label, file }: { label: string; file: UploadedFile | null }) {
   return (
-    <Box>
-      <Typography sx={{ fontSize: 12, fontWeight: 500, color: '#555', mb: 0.5 }}>{label}</Typography>
-      <Box
-        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDragging(false);
-          const f = e.dataTransfer.files[0];
-          if (f) onDrop(f);
-        }}
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          border: `1.5px dashed ${dragging ? '#1565c0' : '#ccc'}`,
-          borderRadius: 1.5,
-          px: 2,
-          py: 1.5,
-          bgcolor: dragging ? '#e3f2fd' : '#fafafa',
-          transition: 'all 0.15s',
-        }}
-      >
-        {file ? (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <InsertDriveFileOutlinedIcon sx={{ fontSize: 18, color: '#666' }} />
-            <Typography sx={{ fontSize: 13, color: '#333' }}>{file.name}</Typography>
-            <CheckCircleIcon sx={{ fontSize: 16, color: '#2e7d32' }} />
-          </Box>
-        ) : (
-          <Typography sx={{ fontSize: 13, color: '#999' }}>Drag and drop CSV file here</Typography>
-        )}
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={onChoose}
-          sx={{ fontSize: 12, minWidth: 100, borderColor: '#bbb', color: '#333' }}
-        >
-          Choose File
-        </Button>
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        border: '1px solid #e0e0e0',
+        borderRadius: 1.5,
+        px: 2,
+        py: 1,
+        bgcolor: '#fafafa',
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+        <InsertDriveFileOutlinedIcon sx={{ fontSize: 18, color: '#666', flexShrink: 0 }} />
+        <Typography sx={{ fontSize: 12.5, color: '#666', flexShrink: 0 }}>{label}:</Typography>
+        <Typography sx={{ fontSize: 13, color: '#333' }} noWrap>{file?.name ?? '—'}</Typography>
       </Box>
+      {file && <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main', flexShrink: 0 }} />}
     </Box>
   );
 }
 
-export default function InputParameters({
+export default function SetParameters({
   trtFile,
   untFile,
   formValues,
   onFormChange,
-  onFileDrop,
+  onBack,
   onNext,
 }: Props) {
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const trtInputRef = useRef<HTMLInputElement>(null);
-  const untInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileInput = (type: 'trt' | 'unt', files: FileList | null) => {
-    if (files && files[0]) onFileDrop(type, files[0]);
-  };
-
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Typography variant="h5" sx={{ mb: 0.5 }}>MEDUSA Web Runner</Typography>
-      <Typography sx={{ fontSize: 13, color: '#666', mb: 3 }}>
-        Analytical identification of death-regulatory genes from CRISPR-based chemogenetic profiling screens.
-      </Typography>
-
-      {/* Input Files + About section */}
+      {/* Uploaded files summary */}
       <Paper sx={{ p: 3, mb: 3 }}>
-        <Grid container spacing={3}>
-          <Grid size={{ xs: 12, md: 7 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>Input Files</Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <FileDropZone
-                label="TRT vs UNT CSV (TvU)"
-                file={trtFile}
-                onDrop={(f) => onFileDrop('trt', f)}
-                onChoose={() => trtInputRef.current?.click()}
-              />
-              <FileDropZone
-                label="UNT vs T0 CSV (UvT0)"
-                file={untFile}
-                onDrop={(f) => onFileDrop('unt', f)}
-                onChoose={() => untInputRef.current?.click()}
-              />
-            </Box>
-            <input
-              ref={trtInputRef}
-              type="file"
-              accept=".csv"
-              style={{ display: 'none' }}
-              onChange={(e) => handleFileInput('trt', e.target.files)}
-            />
-            <input
-              ref={untInputRef}
-              type="file"
-              accept=".csv"
-              style={{ display: 'none' }}
-              onChange={(e) => handleFileInput('unt', e.target.files)}
-            />
+        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>Input Files</Typography>
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <FileSummary label="Drug tested vs untreated" file={trtFile} />
           </Grid>
-
-          <Grid size={{ xs: 12, md: 5 }}>
-            <Paper
-              variant="outlined"
-              sx={{ p: 2.5, bgcolor: '#f8f9ff', borderColor: '#c5cae9', height: '100%' }}
-            >
-              <Typography sx={{ fontWeight: 600, fontSize: 14, mb: 1 }}>About MEDUSA</Typography>
-              <Typography sx={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>
-                MEDUSA infers death kinetics and identifies genes whose perturbation promotes or
-                blocks cell death in chemogenetic screens.
-              </Typography>
-              <Button
-                endIcon={<OpenInNewIcon sx={{ fontSize: 14 }} />}
-                size="small"
-                sx={{ mt: 1.5, fontSize: 12, p: 0, textTransform: 'none', color: '#1565c0' }}
-              >
-                Learn more
-              </Button>
-            </Paper>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <FileSummary label="Untreated vs baseline" file={untFile} />
           </Grid>
         </Grid>
       </Paper>
@@ -223,7 +132,6 @@ export default function InputParameters({
         <Collapse in={showAdvanced}>
           <Divider sx={{ my: 2 }} />
           <Grid container spacing={2}>
-            {/* Row 1: growth/kinetics params */}
             {[
               { field: 't_start', label: 'T_start', placeholder: '0', helper: 'hours' },
               { field: 'ed', label: 'ED', placeholder: '—', helper: 'relative viability' },
@@ -245,7 +153,6 @@ export default function InputParameters({
               </Grid>
             ))}
 
-            {/* Row 2: simulation params */}
             {[
               { field: 'ed_err', label: 'ED_err', placeholder: '0.02', helper: '' },
               { field: 'sim_perm', label: 'sim_perm', placeholder: '10', helper: '' },
@@ -310,14 +217,19 @@ export default function InputParameters({
         </Collapse>
       </Paper>
 
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={onBack} sx={{ textTransform: 'none' }}>
+          Back
+        </Button>
         <Button
           variant="contained"
+          color="primary"
           endIcon={<ArrowForwardIcon />}
           onClick={onNext}
-          sx={{ px: 3 }}
+          disableElevation
+          sx={{ px: 3, textTransform: 'none' }}
         >
-          Next: Review
+          Run Simulation
         </Button>
       </Box>
     </Box>

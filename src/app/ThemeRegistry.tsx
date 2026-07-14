@@ -12,7 +12,7 @@ export default function ThemeRegistry({
 }>) {
   return (
     <AppRouterCacheProvider options={{ key: "mui" }}>
-      <ThemeProvider theme={theme} defaultMode="system">
+      <ThemeProvider theme={theme} defaultMode="light">
         <CssBaseline />
         {children}
       </ThemeProvider>

@@ -8,10 +8,10 @@ interface SidebarProps {
   currentStep: Step;
 }
 
-const STEPS: { label: string; sub?: string }[] = [
-  { label: 'Input & Parameters' },
-  { label: 'Review' },
-  { label: 'Run Analysis' },
+const STEPS: { label: string }[] = [
+  { label: 'Upload Files' },
+  { label: 'Set Parameters' },
+  { label: 'Run Simulation' },
   { label: 'Results' },
 ];
 
@@ -23,7 +23,6 @@ export default function Sidebar({ currentStep }: SidebarProps) {
         flexShrink: 0,
         py: 3,
         px: 2,
-        borderRight: '1px solid #e8eaed',
         alignSelf: 'stretch',
       }}
     >
@@ -39,38 +38,31 @@ export default function Sidebar({ currentStep }: SidebarProps) {
               display: 'flex',
               alignItems: 'center',
               gap: 1.5,
-              px: 1.5,
+              px: 1,
               py: 1,
               mb: 0.5,
-              borderRadius: 2,
-              bgcolor: isActive ? '#1565c0' : 'transparent',
-              cursor: 'default',
             }}
           >
             <Box
               sx={{
-                width: 24,
-                height: 24,
+                width: 22,
+                height: 22,
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
-                bgcolor: isActive
-                  ? 'rgba(255,255,255,0.25)'
-                  : isCompleted
-                  ? '#1565c0'
-                  : '#e0e0e0',
+                bgcolor: isActive || isCompleted ? 'primary.main' : '#e0e0e0',
               }}
             >
               {isCompleted ? (
-                <CheckIcon sx={{ fontSize: 14, color: '#fff' }} />
+                <CheckIcon sx={{ fontSize: 13, color: '#fff' }} />
               ) : (
                 <Typography
                   sx={{
                     fontSize: 12,
                     fontWeight: 700,
-                    color: isActive ? '#fff' : '#666',
+                    color: isActive ? '#fff' : '#888',
                     lineHeight: 1,
                   }}
                 >
@@ -81,8 +73,8 @@ export default function Sidebar({ currentStep }: SidebarProps) {
             <Typography
               sx={{
                 fontSize: 13,
-                fontWeight: isActive ? 600 : 400,
-                color: isActive ? '#fff' : isCompleted ? '#1565c0' : '#555',
+                fontWeight: isActive ? 700 : 400,
+                color: isActive ? '#111' : isCompleted ? 'primary.main' : '#999',
                 lineHeight: 1.3,
               }}
             >

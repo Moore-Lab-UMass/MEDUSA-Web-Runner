@@ -1,10 +1,12 @@
 'use client';
 import { useState } from 'react';
 import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import Header from './Header';
+import Footer from './Footer';
 import Sidebar from './Sidebar';
-import InputParameters from './steps/InputParameters';
-import Review from './steps/Review';
+import UploadFiles from './steps/UploadFiles';
+import SetParameters from './steps/SetParameters';
 import RunAnalysis from './steps/RunAnalysis';
 import Results from './steps/Results';
 import { Step, FormValues, UploadedFile } from '@/types';
@@ -32,8 +34,8 @@ const DEFAULT_FORM: FormValues = {
 
 export default function MedusaApp() {
   const [step, setStep] = useState<Step>(1);
-  const [trtFile, setTrtFile] = useState<UploadedFile | null>({ name: 'trt_vs_unt.csv', sizeMB: '12.4 MB' });
-  const [untFile, setUntFile] = useState<UploadedFile | null>({ name: 'unt_vs_t0.csv', sizeMB: '11.8 MB' });
+  const [trtFile, setTrtFile] = useState<UploadedFile | null>(null);
+  const [untFile, setUntFile] = useState<UploadedFile | null>(null);
   const [formValues, setFormValues] = useState<FormValues>(DEFAULT_FORM);
 
   const handleFormChange = (field: keyof FormValues, value: string | boolean) => {
@@ -47,39 +49,44 @@ export default function MedusaApp() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', bgcolor: '#f0f2f5' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: '#f0f2f5' }}>
       <Header />
-      <Box sx={{ display: 'flex', flex: 1, minHeight: 0, bgcolor: '#fff' }}>
-        <Sidebar currentStep={step} />
-        <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
-          {step === 1 && (
-            <InputParameters
-              trtFile={trtFile}
-              untFile={untFile}
-              formValues={formValues}
-              onFormChange={handleFormChange}
-              onFileDrop={handleFileDrop}
-              onNext={() => setStep(2)}
-            />
-          )}
-          {step === 2 && (
-            <Review
-              trtFile={trtFile}
-              untFile={untFile}
-              formValues={formValues}
-              onBack={() => setStep(1)}
-              onRun={() => setStep(3)}
-            />
-          )}
-          {step === 3 && (
-            <RunAnalysis
-              onCancel={() => setStep(1)}
-              onViewResults={() => setStep(4)}
-            />
-          )}
-          {step === 4 && <Results onNewAnalysis={() => setStep(1)} />}
+      <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, bgcolor: '#fff' }}>
+        <Typography sx={{ px: 3, pt: 2.5, pb: 1, fontWeight: 600, fontSize: 15, color: '#222' }}>
+          [MEDUSA Web runner]
+        </Typography>
+        <Box sx={{ display: 'flex' }}>
+          <Sidebar currentStep={step} />
+          <Box sx={{ flex: 1, minWidth: 0, p: 3 }}>
+            {step === 1 && (
+              <UploadFiles
+                trtFile={trtFile}
+                untFile={untFile}
+                onFileDrop={handleFileDrop}
+                onNext={() => setStep(2)}
+              />
+            )}
+            {step === 2 && (
+              <SetParameters
+                trtFile={trtFile}
+                untFile={untFile}
+                formValues={formValues}
+                onFormChange={handleFormChange}
+                onBack={() => setStep(1)}
+                onNext={() => setStep(3)}
+              />
+            )}
+            {step === 3 && (
+              <RunAnalysis
+                onCancel={() => setStep(1)}
+                onViewResults={() => setStep(4)}
+              />
+            )}
+            {step === 4 && <Results onNewAnalysis={() => setStep(1)} />}
+          </Box>
         </Box>
       </Box>
+      <Footer />
     </Box>
   );
 }

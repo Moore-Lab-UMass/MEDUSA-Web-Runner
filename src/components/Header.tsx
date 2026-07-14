@@ -4,39 +4,62 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
-import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+
+const NAV_LINKS = ['Simulation Tool', 'About', 'Help'];
 
 export default function Header() {
   return (
-    <AppBar position="static" elevation={0} sx={{ bgcolor: '#0d1b2a' }}>
-      <Toolbar sx={{ minHeight: 52, px: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+    <AppBar position="static" elevation={0} color="primary">
+      <Toolbar sx={{ minHeight: 56, px: 3, gap: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+          <Box
+            sx={{
+              width: 28,
+              height: 28,
+              borderRadius: '50%',
+              bgcolor: 'secondary.main',
+              flexShrink: 0,
+            }}
+          />
           <Typography
             variant="h6"
-            sx={{ fontWeight: 800, letterSpacing: 1.5, color: '#fff', lineHeight: 1 }}
+            sx={{ fontWeight: 800, letterSpacing: 1, color: '#fff', lineHeight: 1, fontSize: 18 }}
           >
             MEDUSA
           </Typography>
-          <Typography
-            variant="body2"
-            sx={{ color: 'rgba(255,255,255,0.65)', fontWeight: 400 }}
-          >
-            Web Runner
-          </Typography>
         </Box>
+
         <Box sx={{ flex: 1 }} />
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          {NAV_LINKS.map((label) => (
+            <Button
+              key={label}
+              sx={{
+                color: 'rgba(255,255,255,0.85)',
+                fontSize: 13,
+                textTransform: 'none',
+                '&:hover': { color: '#fff', bgcolor: 'rgba(255,255,255,0.06)' },
+              }}
+            >
+              {label}
+            </Button>
+          ))}
+        </Box>
+
         <Button
-          startIcon={<ArticleOutlinedIcon sx={{ fontSize: 16 }} />}
-          sx={{ color: 'rgba(255,255,255,0.8)', fontSize: 13, '&:hover': { color: '#fff' } }}
+          variant="contained"
+          color="secondary"
+          disableElevation
+          sx={{
+            fontWeight: 700,
+            fontSize: 13,
+            textTransform: 'none',
+            px: 2.5,
+            borderRadius: 1.5,
+          }}
         >
-          Docs
-        </Button>
-        <Button
-          startIcon={<InfoOutlinedIcon sx={{ fontSize: 16 }} />}
-          sx={{ color: 'rgba(255,255,255,0.8)', fontSize: 13, '&:hover': { color: '#fff' } }}
-        >
-          About
+          Sign in
         </Button>
       </Toolbar>
     </AppBar>
