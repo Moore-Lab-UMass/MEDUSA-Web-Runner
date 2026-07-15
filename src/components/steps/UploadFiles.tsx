@@ -39,10 +39,10 @@ function UploadCard({
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-        <Typography sx={{ fontSize: 13, fontWeight: 500, color: '#333' }}>{label}</Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+        <Typography variant="body1" sx={{ fontWeight: 500, color: '#969393' }}>{label}</Typography>
         <Tooltip title={tooltip}>
-          <InfoOutlinedIcon sx={{ fontSize: 15, color: '#999' }} />
+          <InfoOutlinedIcon sx={{ fontSize: 20, color: 'black' }} />
         </Tooltip>
       </Box>
       <Box
@@ -64,7 +64,7 @@ function UploadCard({
           border: '1.5px dashed',
           borderColor: dragging ? 'primary.main' : '#c9ccd1',
           borderRadius: 1.5,
-          minHeight: 260,
+          minHeight: 400,
           px: 2,
           bgcolor: dragging ? '#eef3ee' : '#fff',
           cursor: 'pointer',
@@ -74,15 +74,15 @@ function UploadCard({
       >
         {file ? (
           <>
-            <CheckCircleIcon sx={{ fontSize: 30, color: 'success.main' }} />
+            <CheckCircleIcon sx={{ fontSize: 30, color: 'primary.main' }} />
             <Typography sx={{ fontSize: 13, color: '#333', fontWeight: 500 }}>{file.name}</Typography>
             <Typography sx={{ fontSize: 12, color: '#888' }}>{file.sizeMB}</Typography>
           </>
         ) : (
           <>
-            <UploadFileOutlinedIcon sx={{ fontSize: 30, color: 'success.main' }} />
+            <UploadFileOutlinedIcon sx={{ fontSize: 30, color: 'primary.main' }} />
             <Typography sx={{ fontSize: 13, color: '#555' }}>
-              <Box component="span" sx={{ color: '#1565c0', fontWeight: 600 }}>Click to upload</Box>
+              <Box component="span" sx={{ color: 'primary.main', fontWeight: 600 }}>Click to upload</Box>
               {' '}or drag and drop
             </Typography>
             <Typography sx={{ fontSize: 11.5, color: '#999' }}>{ACCEPTED_LABEL}</Typography>
@@ -105,9 +105,9 @@ export default function UploadFiles({ trtFile, untFile, onFileDrop, onNext }: Pr
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Paper variant="outlined" sx={{ p: 3, bgcolor: '#f5f6f7', borderColor: '#e5e7ea' }}>
-        <Typography sx={{ fontWeight: 600, fontSize: 15, mb: 2.5 }}>Upload Data File</Typography>
-        <Grid container spacing={3}>
+      <Paper variant="outlined" sx={{ p: 5, bgcolor: '#f5f6f7', borderColor: '#e5e7ea', minHeight: 600 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>Upload Data File</Typography>
+        <Grid container spacing={6}>
           <Grid size={{ xs: 12, md: 6 }}>
             <UploadCard
               label="Drug tested vs untreated"
