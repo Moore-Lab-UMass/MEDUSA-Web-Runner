@@ -2,8 +2,6 @@
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Header from './Header';
-import Footer from './Footer';
 import Sidebar from './Sidebar';
 import UploadFiles from './steps/UploadFiles';
 import SetParameters from './steps/SetParameters';
@@ -49,44 +47,40 @@ export default function MedusaApp() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: '#f0f2f5' }}>
-      <Header />
-      <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, bgcolor: '#fff' }}>
-        <Typography sx={{ px: 3, pt: 2.5, pb: 1, fontWeight: 600, fontSize: 15, color: '#222' }}>
-          [MEDUSA Web runner]
-        </Typography>
-        <Box sx={{ display: 'flex' }}>
-          <Sidebar currentStep={step} />
-          <Box sx={{ flex: 1, minWidth: 0, p: 3 }}>
-            {step === 1 && (
-              <UploadFiles
-                trtFile={trtFile}
-                untFile={untFile}
-                onFileDrop={handleFileDrop}
-                onNext={() => setStep(2)}
-              />
-            )}
-            {step === 2 && (
-              <SetParameters
-                trtFile={trtFile}
-                untFile={untFile}
-                formValues={formValues}
-                onFormChange={handleFormChange}
-                onBack={() => setStep(1)}
-                onNext={() => setStep(3)}
-              />
-            )}
-            {step === 3 && (
-              <RunAnalysis
-                onCancel={() => setStep(1)}
-                onViewResults={() => setStep(4)}
-              />
-            )}
-            {step === 4 && <Results onNewAnalysis={() => setStep(1)} />}
-          </Box>
+    <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, bgcolor: '#fff', px: 25 }}>
+      <Typography sx={{ px: 3, pt: 2.5, pb: 1, fontWeight: 600, fontSize: 15, color: '#222' }}>
+        [MEDUSA Web runner]
+      </Typography>
+      <Box sx={{ display: 'flex' }}>
+        <Sidebar currentStep={step} />
+        <Box sx={{ flex: 1, minWidth: 0, p: 3 }}>
+          {step === 1 && (
+            <UploadFiles
+              trtFile={trtFile}
+              untFile={untFile}
+              onFileDrop={handleFileDrop}
+              onNext={() => setStep(2)}
+            />
+          )}
+          {step === 2 && (
+            <SetParameters
+              trtFile={trtFile}
+              untFile={untFile}
+              formValues={formValues}
+              onFormChange={handleFormChange}
+              onBack={() => setStep(1)}
+              onNext={() => setStep(3)}
+            />
+          )}
+          {step === 3 && (
+            <RunAnalysis
+              onCancel={() => setStep(1)}
+              onViewResults={() => setStep(4)}
+            />
+          )}
+          {step === 4 && <Results onNewAnalysis={() => setStep(1)} />}
         </Box>
       </Box>
-      <Footer />
     </Box>
   );
 }

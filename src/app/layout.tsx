@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import Box from "@mui/material/Box";
 import ThemeRegistry from "./ThemeRegistry";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -14,7 +17,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <ThemeRegistry>{children}</ThemeRegistry>
+        <ThemeRegistry>
+          <Box sx={{ display: "flex", flexDirection: "column" }}>
+            <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+              <Header />
+              {children}
+            </Box>
+            <Footer />
+          </Box>
+        </ThemeRegistry>
       </body>
     </html>
   );

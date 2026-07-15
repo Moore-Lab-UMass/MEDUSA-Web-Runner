@@ -2,8 +2,8 @@ import { createTheme } from "@mui/material/styles";
 
 const brandPalette = {
   primary: {
-    main: "#123832",
-    dark: "#0d2924",
+    main: "#125e5e",
+    dark: "#072327",
     contrastText: "#ffffff",
   },
   secondary: {

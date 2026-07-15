@@ -793,6 +793,37 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mui/lab@npm:9.0.0-beta.6":
+  version: 9.0.0-beta.6
+  resolution: "@mui/lab@npm:9.0.0-beta.6"
+  dependencies:
+    "@babel/runtime": "npm:^7.29.2"
+    "@mui/system": "npm:^9.2.0"
+    "@mui/types": "npm:^9.1.1"
+    "@mui/utils": "npm:^9.2.0"
+    clsx: "npm:^2.1.1"
+    prop-types: "npm:^15.8.1"
+  peerDependencies:
+    "@emotion/react": ^11.5.0
+    "@emotion/styled": ^11.3.0
+    "@mui/material": ^9.2.0
+    "@mui/material-pigment-css": ^9.2.0
+    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
+    react: ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
+  peerDependenciesMeta:
+    "@emotion/react":
+      optional: true
+    "@emotion/styled":
+      optional: true
+    "@mui/material-pigment-css":
+      optional: true
+    "@types/react":
+      optional: true
+  checksum: 10c0/74456589751d43a88b16ca61c5a09e435724b0209079833d5858d37766d262f29722991e6bb55600c682e4399d0d6967b68f4b0b91054dbb6906a2137205bd51
+  languageName: node
+  linkType: hard
+
 "@mui/material-nextjs@npm:^9.1.1":
   version: 9.1.1
   resolution: "@mui/material-nextjs@npm:9.1.1"
@@ -3594,6 +3625,7 @@ __metadata:
     "@emotion/react": "npm:^11.14.0"
     "@emotion/styled": "npm:^11.14.1"
     "@mui/icons-material": "npm:^9.2.0"
+    "@mui/lab": "npm:9.0.0-beta.6"
     "@mui/material": "npm:^9.2.0"
     "@mui/material-nextjs": "npm:^9.1.1"
     "@types/node": "npm:^20"

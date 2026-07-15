@@ -230,7 +230,7 @@ export default function Results({ onNewAnalysis }: { onNewAnalysis: () => void }
           {tab === 0 && (
             <Grid container spacing={3}>
               <Grid size={{ xs: 12, md: 5 }}>
-                <Typography sx={{ fontWeight: 600, fontSize: 13, mb: 1.5 }}>
+                <Typography component="div" sx={{ fontWeight: 600, fontSize: 13, mb: 1.5 }}>
                   Top Pro-Death Hits
                   <Chip label="10" size="small" sx={{ ml: 1, height: 18, fontSize: 11 }} />
                 </Typography>
@@ -245,7 +245,7 @@ export default function Results({ onNewAnalysis }: { onNewAnalysis: () => void }
           {tab === 1 && (
             <Grid container spacing={3}>
               <Grid size={{ xs: 12, md: 5 }}>
-                <Typography sx={{ fontWeight: 600, fontSize: 13, mb: 1.5 }}>
+                <Typography component="div" sx={{ fontWeight: 600, fontSize: 13, mb: 1.5 }}>
                   Top Anti-Death Hits
                   <Chip label="10" size="small" sx={{ ml: 1, height: 18, fontSize: 11 }} />
                 </Typography>
