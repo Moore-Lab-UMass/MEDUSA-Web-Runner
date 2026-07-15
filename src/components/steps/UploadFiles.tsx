@@ -9,7 +9,7 @@ import Grid from '@mui/material/Grid';
 import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import ArrowForwardIcon from '@mui/icons-material/KeyboardArrowRight';
 import { UploadedFile } from '@/types';
 
 interface Props {

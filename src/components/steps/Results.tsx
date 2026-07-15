@@ -15,8 +15,8 @@ import Grid from '@mui/material/Grid';
 import Chip from '@mui/material/Chip';
 import DownloadIcon from '@mui/icons-material/Download';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/KeyboardArrowRight';
+import ArrowBackIcon from '@mui/icons-material/KeyboardArrowLeft';
 import {
   ScatterChart,
   Scatter,
