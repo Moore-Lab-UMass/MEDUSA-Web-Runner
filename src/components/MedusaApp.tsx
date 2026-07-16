@@ -51,6 +51,12 @@ export default function MedusaApp() {
     else setUntFile(null);
   };
 
+  const handleNewAnalysis = () => {
+    setTrtFile(null);
+    setUntFile(null);
+    setStep(1);
+  };
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, bgcolor: '#fff', px: 25 }}>
       <Typography sx={{ px: 3, pt: 2.5, pb: 1, fontWeight: 600, fontSize: 15, color: '#222' }}>
@@ -84,7 +90,7 @@ export default function MedusaApp() {
               onViewResults={() => setStep(4)}
             />
           )}
-          {step === 4 && <Results onNewAnalysis={() => setStep(1)} />}
+          {step === 4 && <Results onNewAnalysis={handleNewAnalysis} />}
         </Box>
       </Box>
     </Box>

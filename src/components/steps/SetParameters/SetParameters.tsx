@@ -67,6 +67,7 @@ export default function SetParameters({
               placeholder="e.g. 0.0231"
               value={formValues.npg}
               onChange={(v) => onFormChange('npg', v)}
+              width={325}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 3 }}>
@@ -76,6 +77,7 @@ export default function SetParameters({
               placeholder="e.g. 120"
               value={formValues.t_end_unt}
               onChange={(v) => onFormChange('t_end_unt', v)}
+              width={325}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 3 }}>
@@ -85,6 +87,7 @@ export default function SetParameters({
               placeholder="e.g. 120"
               value={formValues.t_end_tr}
               onChange={(v) => onFormChange('t_end_tr', v)}
+              width={325}
             />
           </Grid>
         </Grid>
@@ -111,15 +114,12 @@ export default function SetParameters({
               { field: 'drdrug', label: 'DRdrug', placeholder: '0.020', helper: 'death rate post-death' },
             ].map(({ field, label, placeholder, helper }) => (
               <Grid key={field} size={{ xs: 6, sm: 4, md: 2 }}>
-                <TextField
-                  fullWidth
+                <ParamField
                   label={label}
-                  size="small"
+                  tooltip={helper || undefined}
                   placeholder={placeholder}
                   value={formValues[field as keyof FormValues] as string}
-                  onChange={(e) => onFormChange(field as keyof FormValues, e.target.value)}
-                  helperText={helper}
-                  sx={{ bgcolor: '#fff' }}
+                  onChange={(v) => onFormChange(field as keyof FormValues, v)}
                 />
               </Grid>
             ))}
@@ -133,15 +133,12 @@ export default function SetParameters({
               { field: 'max_guides_nont', label: 'max_guides_nont', placeholder: '—', helper: '' },
             ].map(({ field, label, placeholder, helper }) => (
               <Grid key={field} size={{ xs: 6, sm: 4, md: 2 }}>
-                <TextField
-                  fullWidth
+                <ParamField
                   label={label}
-                  size="small"
+                  tooltip={helper || undefined}
                   placeholder={placeholder}
                   value={formValues[field as keyof FormValues] as string}
-                  onChange={(e) => onFormChange(field as keyof FormValues, e.target.value)}
-                  helperText={helper}
-                  sx={{ bgcolor: '#fff' }}
+                  onChange={(v) => onFormChange(field as keyof FormValues, v)}
                 />
               </Grid>
             ))}

@@ -10,12 +10,14 @@ export default function ParamField({
   value,
   onChange,
   placeholder,
+  width,
 }: {
   label: string;
   tooltip?: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  width?: number | string;
 }) {
   return (
     <Box>
@@ -33,7 +35,7 @@ export default function ParamField({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        sx={{ bgcolor: '#fff', maxWidth: 400 }}
+        sx={{ bgcolor: '#fff', ...(width ? { width } : {}) }}
       />
     </Box>
   );
