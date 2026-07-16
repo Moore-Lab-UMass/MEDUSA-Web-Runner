@@ -46,6 +46,11 @@ export default function MedusaApp() {
     else setUntFile({ name: file.name, sizeMB });
   };
 
+  const handleFileRemove = (type: 'trt' | 'unt') => {
+    if (type === 'trt') setTrtFile(null);
+    else setUntFile(null);
+  };
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, bgcolor: '#fff', px: 25 }}>
       <Typography sx={{ px: 3, pt: 2.5, pb: 1, fontWeight: 600, fontSize: 15, color: '#222' }}>
@@ -59,6 +64,7 @@ export default function MedusaApp() {
               trtFile={trtFile}
               untFile={untFile}
               onFileDrop={handleFileDrop}
+              onFileRemove={handleFileRemove}
               onNext={() => setStep(2)}
             />
           )}

@@ -6,9 +6,11 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
 import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
+import LinearProgress from '@mui/material/LinearProgress';
 import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import ArrowForwardIcon from '@mui/icons-material/KeyboardArrowRight';
 import { UploadedFile } from '@/types';
 
@@ -16,6 +18,7 @@ interface Props {
   trtFile: UploadedFile | null;
   untFile: UploadedFile | null;
   onFileDrop: (type: 'trt' | 'unt', file: File) => void;
+  onFileRemove: (type: 'trt' | 'unt') => void;
   onNext: () => void;
 }
 
@@ -28,12 +31,14 @@ function UploadCard({
   file,
   onDrop,
   onChoose,
+  onRemove,
 }: {
   label: string;
   tooltip: string;
   file: UploadedFile | null;
   onDrop: (f: File) => void;
   onChoose: () => void;
+  onRemove: () => void;
 }) {
   const [dragging, setDragging] = useState(false);
 
@@ -45,55 +50,92 @@ function UploadCard({
           <InfoOutlinedIcon sx={{ fontSize: 20, color: 'black' }} />
         </Tooltip>
       </Box>
-      <Box
-        onClick={onChoose}
-        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDragging(false);
-          const f = e.dataTransfer.files[0];
-          if (f) onDrop(f);
-        }}
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 1,
-          border: '1.5px dashed',
-          borderColor: dragging ? 'primary.main' : '#c9ccd1',
-          borderRadius: 1.5,
-          minHeight: 400,
-          px: 2,
-          bgcolor: dragging ? '#eef3ee' : '#fff',
-          cursor: 'pointer',
-          transition: 'all 0.15s',
-          textAlign: 'center',
-        }}
-      >
-        {file ? (
-          <>
-            <CheckCircleIcon sx={{ fontSize: 30, color: 'primary.main' }} />
-            <Typography sx={{ fontSize: 13, color: '#333', fontWeight: 500 }}>{file.name}</Typography>
-            <Typography sx={{ fontSize: 12, color: '#888' }}>{file.sizeMB}</Typography>
-          </>
-        ) : (
-          <>
-            <UploadFileOutlinedIcon sx={{ fontSize: 30, color: 'primary.main' }} />
-            <Typography sx={{ fontSize: 13, color: '#555' }}>
-              <Box component="span" sx={{ color: 'primary.main', fontWeight: 600 }}>Click to upload</Box>
-              {' '}or drag and drop
-            </Typography>
-            <Typography sx={{ fontSize: 11.5, color: '#999' }}>{ACCEPTED_LABEL}</Typography>
-          </>
-        )}
-      </Box>
+      {file ? (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 3,
+            border: '1px solid #e5e7ea',
+            borderRadius: 1.5,
+            px: 3,
+            py: 4,
+            bgcolor: '#fff',
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 34,
+              height: 34,
+              borderRadius: 1,
+              bgcolor: '#eef3ee',
+              flexShrink: 0,
+            }}
+          >
+            <UploadFileOutlinedIcon sx={{ fontSize: 18, color: 'primary.main' }} />
+          </Box>
+          <Box sx={{ flex: 1, minWidth: 0, gap: .5, display: 'flex', flexDirection: 'column' }}>
+            <Typography noWrap sx={{ fontSize: 13.5, fontWeight: 600, color: '#222' }}>{file.name}</Typography>
+            <Typography sx={{ fontSize: 11.5, color: '#888', mb: 0.5 }}>{file.sizeMB} · Complete</Typography>
+            <LinearProgress
+              variant="determinate"
+              value={100}
+              sx={{
+                height: 4,
+                borderRadius: 2,
+                bgcolor: '#e5e7ea',
+                '& .MuiLinearProgress-bar': { bgcolor: 'primary.main', borderRadius: 2 },
+              }}
+            />
+          </Box>
+          <IconButton onClick={onRemove} size="small" sx={{ flexShrink: 0 }}>
+            <DeleteOutlineIcon sx={{ fontSize: 18, color: '#888' }} />
+          </IconButton>
+        </Box>
+      ) : (
+        <Box
+          onClick={onChoose}
+          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragging(false);
+            const f = e.dataTransfer.files[0];
+            if (f) onDrop(f);
+          }}
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 1,
+            border: '1.5px dashed',
+            borderColor: dragging ? 'primary.main' : '#c9ccd1',
+            borderRadius: 1.5,
+            minHeight: 400,
+            px: 2,
+            bgcolor: dragging ? '#eef3ee' : '#fff',
+            cursor: 'pointer',
+            transition: 'all 0.15s',
+            textAlign: 'center',
+          }}
+        >
+          <UploadFileOutlinedIcon sx={{ fontSize: 30, color: 'primary.main' }} />
+          <Typography sx={{ fontSize: 13, color: '#555' }}>
+            <Box component="span" sx={{ color: 'primary.main', fontWeight: 600 }}>Click to upload</Box>
+            {' '}or drag and drop
+          </Typography>
+          <Typography sx={{ fontSize: 11.5, color: '#999' }}>{ACCEPTED_LABEL}</Typography>
+        </Box>
+      )}
     </Box>
   );
 }
 
-export default function UploadFiles({ trtFile, untFile, onFileDrop, onNext }: Props) {
+export default function UploadFiles({ trtFile, untFile, onFileDrop, onFileRemove, onNext }: Props) {
   const trtInputRef = useRef<HTMLInputElement>(null);
   const untInputRef = useRef<HTMLInputElement>(null);
 
@@ -115,6 +157,7 @@ export default function UploadFiles({ trtFile, untFile, onFileDrop, onNext }: Pr
               file={trtFile}
               onDrop={(f) => onFileDrop('trt', f)}
               onChoose={() => trtInputRef.current?.click()}
+              onRemove={() => onFileRemove('trt')}
             />
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>
@@ -124,6 +167,7 @@ export default function UploadFiles({ trtFile, untFile, onFileDrop, onNext }: Pr
               file={untFile}
               onDrop={(f) => onFileDrop('unt', f)}
               onChoose={() => untInputRef.current?.click()}
+              onRemove={() => onFileRemove('unt')}
             />
           </Grid>
         </Grid>
