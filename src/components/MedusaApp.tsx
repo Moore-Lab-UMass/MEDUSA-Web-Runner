@@ -92,7 +92,9 @@ export default function MedusaApp() {
               onViewResults={() => setStep(4)}
             />
           )}
-          {step === 4 && <Results onNewAnalysis={handleNewAnalysis} />}
+          {step === 4 && (
+            <Results onBack={() => setStep(3)} onNewAnalysis={handleNewAnalysis} />
+          )}
         </Box>
       </Box>
     </Box>

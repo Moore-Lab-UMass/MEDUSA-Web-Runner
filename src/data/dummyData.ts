@@ -33,9 +33,22 @@ function generatePoints(
   return points;
 }
 
-export const nontargetingData: ScatterPoint[] = generatePoints(42, 180, 0.1, 0.0, 1.4, 1.4);
-export const proDeathData: ScatterPoint[] = generatePoints(7, 25, 0.8, 3.2, 1.2, 0.9);
-export const antiDeathData: ScatterPoint[] = generatePoints(13, 25, 0.6, -3.1, 1.1, 0.8);
+function toVolcanoShape(points: ScatterPoint[], minY: number): ScatterPoint[] {
+  return points.map((p) => ({ x: p.x, y: parseFloat(Math.max(minY, Math.abs(p.y)).toFixed(3)) }));
+}
+
+export const notSignificantData: ScatterPoint[] = toVolcanoShape(
+  generatePoints(42, 150, 0, 0.6, 1.9, 0.5),
+  0.05,
+);
+export const proDeathData: ScatterPoint[] = toVolcanoShape(
+  generatePoints(7, 25, -3.4, 6, 1.4, 1.6),
+  1.6,
+);
+export const antiDeathData: ScatterPoint[] = toVolcanoShape(
+  generatePoints(13, 25, 2.7, 6, 1, 1.6),
+  1.6,
+);
 
 export const proDeathGenes = [
   { gene: 'CYLD', score: 3.21, pvalue: '1.2e-06', fdr: '3.4e-04' },
@@ -62,3 +75,7 @@ export const antiDeathGenes = [
   { gene: 'CFLAR', score: -1.82, pvalue: '7.9e-05', fdr: '7.2e-03' },
   { gene: 'AVEN', score: -1.71, pvalue: '1.1e-04', fdr: '9.6e-03' },
 ];
+
+export const allGenes = [...proDeathGenes, ...antiDeathGenes].sort(
+  (a, b) => Math.abs(b.score) - Math.abs(a.score),
+);
