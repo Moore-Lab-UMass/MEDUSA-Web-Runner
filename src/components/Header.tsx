@@ -9,7 +9,7 @@ const NAV_LINKS = ['Simulation Tool', 'About', 'Help'];
 
 export default function Header() {
   return (
-    <AppBar position="static" elevation={0} color="primary">
+    <AppBar position="sticky" elevation={0} color="primary" sx={{ top: 0, zIndex: (theme) => theme.zIndex.appBar }}>
       <Toolbar sx={{ minHeight: 56, px: 3, gap: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
           <Box

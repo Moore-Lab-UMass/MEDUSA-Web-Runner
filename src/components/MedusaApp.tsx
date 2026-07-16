@@ -86,7 +86,9 @@ export default function MedusaApp() {
           )}
           {step === 3 && (
             <RunAnalysis
+              formValues={formValues}
               onCancel={() => setStep(1)}
+              onBack={() => setStep(2)}
               onViewResults={() => setStep(4)}
             />
           )}
