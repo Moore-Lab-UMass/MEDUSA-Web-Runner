@@ -139,8 +139,9 @@ export default function UploadFiles({ trtFile, untFile, onFileDrop, onFileRemove
   const trtInputRef = useRef<HTMLInputElement>(null);
   const untInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileInput = (type: 'trt' | 'unt', files: FileList | null) => {
-    if (files && files[0]) onFileDrop(type, files[0]);
+  const handleFileInput = (type: 'trt' | 'unt', input: HTMLInputElement) => {
+    if (input.files && input.files[0]) onFileDrop(type, input.files[0]);
+    input.value = '';
   };
 
   const canProceed = !!trtFile && !!untFile;
@@ -177,14 +178,14 @@ export default function UploadFiles({ trtFile, untFile, onFileDrop, onFileRemove
           type="file"
           accept={ACCEPTED}
           style={{ display: 'none' }}
-          onChange={(e) => handleFileInput('trt', e.target.files)}
+          onChange={(e) => handleFileInput('trt', e.target)}
         />
         <input
           ref={untInputRef}
           type="file"
           accept={ACCEPTED}
           style={{ display: 'none' }}
-          onChange={(e) => handleFileInput('unt', e.target.files)}
+          onChange={(e) => handleFileInput('unt', e.target)}
         />
       </Paper>
 
