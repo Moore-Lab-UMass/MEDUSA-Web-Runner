@@ -36,8 +36,8 @@ export default function JobHeader({
           )}
         </Box>
         <Tooltip title="Cancel run">
-          <IconButton onClick={onCancel} size="small">
-            <Box sx={{ width: 12, height: 12, bgcolor: 'error.main', borderRadius: 0.5 }} />
+          <IconButton onClick={onCancel} size="medium" sx={{ backgroundColor: '#efe9e9' }}>
+            <Box sx={{ width: 10, height: 10, bgcolor: 'error.main', borderRadius: 0.5 }} />
           </IconButton>
         </Tooltip>
       </Box>
