@@ -11,7 +11,7 @@ const STAT_CARDS = [
 
 export default function StatCards() {
   return (
-    <Grid container spacing={2} sx={{ mb: 3 }}>
+    <Grid container spacing={2} sx={{ mb: 2 }}>
       {STAT_CARDS.map((card) => (
         <Grid key={card.label} size={{ xs: 6, md: 3 }}>
           <Paper variant="outlined" sx={{ p: 2.5, textAlign: 'center' }}>
