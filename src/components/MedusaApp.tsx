@@ -3,10 +3,10 @@ import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Sidebar from './Sidebar';
-import UploadFiles from './steps/UploadFiles';
-import SetParameters from './steps/SetParameters';
-import RunAnalysis from './steps/RunAnalysis';
-import Results from './steps/Results';
+import UploadFiles from './steps/UploadFiles/UploadFiles';
+import SetParameters from './steps/SetParameters/SetParameters';
+import RunAnalysis from './steps/RunAnalysis/RunAnalysis';
+import Results from './steps/Results/Results';
 import { Step, FormValues, UploadedFile } from '@/types';
 
 const DEFAULT_FORM: FormValues = {

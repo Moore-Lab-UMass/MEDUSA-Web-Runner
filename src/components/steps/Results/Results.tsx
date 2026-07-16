@@ -6,29 +6,16 @@ import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import Grid from '@mui/material/Grid';
 import Chip from '@mui/material/Chip';
 import DownloadIcon from '@mui/icons-material/Download';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import ArrowForwardIcon from '@mui/icons-material/KeyboardArrowRight';
 import ArrowBackIcon from '@mui/icons-material/KeyboardArrowLeft';
-import {
-  ScatterChart,
-  Scatter,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  ReferenceLine,
-} from 'recharts';
-import { nontargetingData, proDeathData, antiDeathData, proDeathGenes, antiDeathGenes } from '@/data/dummyData';
+import { proDeathGenes, antiDeathGenes } from '@/data/dummyData';
+import PhasePlot from './PhasePlot';
+import GeneTable from './GeneTable';
+import PValueTab from './PValueTab';
 
 const STAT_CARDS = [
   { label: 'Top Hits (Pro-Death)', value: '10', sub: 'view table →' },
@@ -36,134 +23,6 @@ const STAT_CARDS = [
   { label: 'Significant Genes', value: '1,248', sub: 'view table →' },
   { label: 'Total Genes', value: '18,732', sub: null },
 ];
-
-function PhasePlot() {
-  return (
-    <Box sx={{ height: 340 }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <ScatterChart margin={{ top: 10, right: 20, bottom: 40, left: 10 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-          <XAxis
-            type="number"
-            dataKey="x"
-            domain={[-6, 6]}
-            tickCount={7}
-            label={{
-              value: 'log2 Fold Change (UNT vs T0)',
-              position: 'insideBottom',
-              offset: -25,
-              style: { fontSize: 11, fill: '#555' },
-            }}
-            tick={{ fontSize: 11 }}
-          />
-          <YAxis
-            type="number"
-            dataKey="y"
-            domain={[-6, 6]}
-            tickCount={7}
-            label={{
-              value: 'log2 Fold Change (TRT vs UNT)',
-              angle: -90,
-              position: 'insideLeft',
-              offset: 10,
-              style: { fontSize: 11, fill: '#555' },
-            }}
-            tick={{ fontSize: 11 }}
-          />
-          <ReferenceLine x={0} stroke="#ccc" />
-          <ReferenceLine y={0} stroke="#ccc" />
-          <Tooltip
-            cursor={{ strokeDasharray: '3 3' }}
-            formatter={(val) => (typeof val === 'number' ? val.toFixed(3) : val)}
-          />
-          <Legend
-            verticalAlign="top"
-            align="right"
-            wrapperStyle={{ fontSize: 12, paddingBottom: 8 }}
-          />
-          <Scatter
-            name="Non-targeting"
-            data={nontargetingData}
-            fill="#777777"
-            opacity={0.4}
-            r={2}
-          />
-          <Scatter
-            name="Pro-death"
-            data={proDeathData}
-            fill="#e53935"
-            opacity={0.85}
-            r={3}
-          />
-          <Scatter
-            name="Anti-death"
-            data={antiDeathData}
-            fill="#1e88e5"
-            opacity={0.85}
-            r={3}
-          />
-        </ScatterChart>
-      </ResponsiveContainer>
-    </Box>
-  );
-}
-
-function GeneTable({
-  genes,
-  type,
-}: {
-  genes: typeof proDeathGenes;
-  type: 'pro' | 'anti';
-}) {
-  return (
-    <Box>
-      <Table size="small">
-        <TableHead>
-          <TableRow sx={{ bgcolor: '#f5f5f5' }}>
-            <TableCell sx={{ fontWeight: 600, fontSize: 12 }}>Gene</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: 12 }} align="right">Score</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: 12 }} align="right">p-value</TableCell>
-            <TableCell sx={{ fontWeight: 600, fontSize: 12 }} align="right">FDR</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {genes.map((row) => (
-            <TableRow key={row.gene} hover>
-              <TableCell sx={{ fontSize: 13, fontWeight: 500 }}>{row.gene}</TableCell>
-              <TableCell
-                align="right"
-                sx={{
-                  fontSize: 13,
-                  color: type === 'pro' ? '#c62828' : '#1565c0',
-                  fontWeight: 500,
-                }}
-              >
-                {row.score.toFixed(2)}
-              </TableCell>
-              <TableCell align="right" sx={{ fontSize: 13 }}>{row.pvalue}</TableCell>
-              <TableCell align="right" sx={{ fontSize: 13 }}>{row.fdr}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <Button
-        endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
-        size="small"
-        sx={{ mt: 1, fontSize: 12, color: '#1565c0' }}
-      >
-        View full table
-      </Button>
-    </Box>
-  );
-}
-
-function PValueTab() {
-  return (
-    <Box sx={{ p: 2, textAlign: 'center', color: '#888' }}>
-      <Typography sx={{ fontSize: 13 }}>P-Value distribution histogram would appear here.</Typography>
-    </Box>
-  );
-}
 
 export default function Results({ onNewAnalysis }: { onNewAnalysis: () => void }) {
   const [tab, setTab] = useState(0);

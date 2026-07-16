@@ -12,13 +12,11 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Switch from '@mui/material/Switch';
-import Tooltip from '@mui/material/Tooltip';
-import InsertDriveFileOutlinedIcon from '@mui/icons-material/InsertDriveFileOutlined';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ArrowForwardIcon from '@mui/icons-material/KeyboardArrowRight';
 import ArrowBackIcon from '@mui/icons-material/KeyboardArrowLeft';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { FormValues, UploadedFile } from '@/types';
+import FileSummary from './FileSummary';
+import ParamField from './ParamField';
 
 interface Props {
   trtFile: UploadedFile | null;
@@ -27,65 +25,6 @@ interface Props {
   onFormChange: (field: keyof FormValues, value: string | boolean) => void;
   onBack: () => void;
   onNext: () => void;
-}
-
-function FileSummary({ label, file }: { label: string; file: UploadedFile | null }) {
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        border: '1px solid #e0e0e0',
-        borderRadius: 1.5,
-        px: 2,
-        py: 1,
-        bgcolor: '#fafafa',
-      }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
-        <InsertDriveFileOutlinedIcon sx={{ fontSize: 18, color: '#666', flexShrink: 0 }} />
-        <Typography sx={{ fontSize: 12.5, color: '#666', flexShrink: 0 }}>{label}:</Typography>
-        <Typography sx={{ fontSize: 13, color: '#333' }} noWrap>{file?.name ?? '—'}</Typography>
-      </Box>
-      {file && <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main', flexShrink: 0 }} />}
-    </Box>
-  );
-}
-
-function ParamField({
-  label,
-  tooltip,
-  value,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  tooltip?: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-}) {
-  return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-        <Typography sx={{ fontSize: 13.5, color: '#555' }}>{label}</Typography>
-        {tooltip && (
-          <Tooltip title={tooltip}>
-            <InfoOutlinedIcon sx={{ fontSize: 20, color: '#999' }} />
-          </Tooltip>
-        )}
-      </Box>
-      <TextField
-        fullWidth
-        size="small"
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        sx={{ bgcolor: '#fff', maxWidth: 400 }}
-      />
-    </Box>
-  );
 }
 
 export default function SetParameters({
