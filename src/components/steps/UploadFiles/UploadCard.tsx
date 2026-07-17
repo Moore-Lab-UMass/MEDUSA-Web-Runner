@@ -31,10 +31,10 @@ export default function UploadCard({
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-        <Typography variant="body1" sx={{ fontWeight: 500, color: '#969393' }}>{label}</Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, mb: 1 }}>
+        <Typography variant="body1" noWrap sx={{ fontWeight: 500, color: '#969393', minWidth: 0 }}>{label}</Typography>
         <Tooltip title={tooltip}>
-          <InfoOutlinedIcon sx={{ fontSize: 20, color: 'black' }} />
+          <InfoOutlinedIcon sx={{ fontSize: 20, color: 'black', flexShrink: 0 }} />
         </Tooltip>
       </Box>
       {file ? (
@@ -102,7 +102,7 @@ export default function UploadCard({
             border: '1.5px dashed',
             borderColor: dragging ? 'primary.main' : '#c9ccd1',
             borderRadius: 1.5,
-            minHeight: 400,
+            minHeight: { xs: 220, sm: 400 },
             px: 2,
             bgcolor: dragging ? '#eef3ee' : '#fff',
             cursor: 'pointer',

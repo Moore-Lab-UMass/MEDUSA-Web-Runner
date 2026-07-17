@@ -35,7 +35,7 @@ export default function ParamField({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        sx={{ bgcolor: '#fff', ...(width ? { width } : {}) }}
+        sx={{ bgcolor: '#fff', width: '100%', ...(width ? { maxWidth: { xs: '100%', sm: width } } : {}) }}
       />
     </Box>
   );

@@ -53,7 +53,7 @@ export default function SetParameters({
       </Paper>
 
       {/* Parameters */}
-      <Paper variant="outlined" sx={{ p: 5, mb: 3, bgcolor: '#f5f6f7', borderColor: '#e5e7ea' }}>
+      <Paper variant="outlined" sx={{ p: { xs: 2.5, sm: 5 }, mb: 3, bgcolor: '#f5f6f7', borderColor: '#e5e7ea' }}>
         <Typography variant="h6" sx={{ fontWeight: 600 }}>Set Parameters</Typography>
         <Typography sx={{ fontSize: 13, color: '#888', mb: 4 }}>
           Configure the required simulation inputs below.

@@ -49,7 +49,7 @@ export default function RunAnalysis({ formValues, onCancel, onBack, onViewResult
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Paper sx={{ p: 4 }}>
+      <Paper sx={{ p: { xs: 2.5, sm: 4 } }}>
         <JobHeader jobName="[Job name]" running={!done} onCancel={onCancel} />
         <RunDetails
           runId="102k.9d0iol.902"

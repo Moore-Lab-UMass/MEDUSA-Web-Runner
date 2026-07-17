@@ -15,7 +15,7 @@ const COLUMNS = [
 export default function Footer() {
   return (
     <Box component="footer" sx={{ bgcolor: 'primary.dark', color: 'rgba(255,255,255,0.75)', mt: 'auto' }}>
-      <Box sx={{ maxWidth: 1200, mx: 'auto', px: 4, py: 5 }}>
+      <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 2, sm: 4 }, py: 5 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 4 }}>
           <Box
             sx={{
@@ -64,7 +64,7 @@ export default function Footer() {
         sx={{
           maxWidth: 1200,
           mx: 'auto',
-          px: 4,
+          px: { xs: 2, sm: 4 },
           py: 2,
           display: 'flex',
           flexWrap: 'wrap',

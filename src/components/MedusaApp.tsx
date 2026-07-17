@@ -58,13 +58,13 @@ export default function MedusaApp() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, bgcolor: '#fff', px: 25 }}>
-      <Typography sx={{ px: 3, pt: 2.5, pb: 1, fontWeight: 600, fontSize: 15, color: '#222' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, bgcolor: '#fff', px: { xs: 2, sm: 3, md: 6, lg: 12, xl: 20 } }}>
+      <Typography sx={{ px: { xs: 1, sm: 3 }, pt: 2.5, pb: 1, fontWeight: 600, fontSize: 15, color: '#222' }}>
         [MEDUSA Web runner]
       </Typography>
-      <Box sx={{ display: 'flex' }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
         <Sidebar currentStep={step} />
-        <Box sx={{ flex: 1, minWidth: 0, p: 3 }}>
+        <Box sx={{ flex: 1, minWidth: 0, p: { xs: 2, sm: 3 } }}>
           {step === 1 && (
             <UploadFiles
               trtFile={trtFile}

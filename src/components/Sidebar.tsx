@@ -24,8 +24,17 @@ const STEPS: { label: string }[] = [
 
 export default function Sidebar({ currentStep }: SidebarProps) {
   return (
-    <Box sx={{ width: 210, flexShrink: 0, py: 3, alignSelf: 'stretch' }}>
-      <Timeline sx={{ p: 0, m: 0 }}>
+    <>
+      {/* Compact horizontal stepper for small screens */}
+      <Box
+        sx={{
+          display: { xs: 'flex', md: 'none' },
+          width: '100%',
+          alignItems: 'flex-start',
+          py: 2,
+          overflowX: 'auto',
+        }}
+      >
         {STEPS.map((step, i) => {
           const num = (i + 1) as Step;
           const isActive = num === currentStep;
@@ -33,64 +42,134 @@ export default function Sidebar({ currentStep }: SidebarProps) {
           const isLast = i === STEPS.length - 1;
 
           return (
-            <TimelineItem key={num} sx={{ minHeight: 56 }}>
-              <TimelineOppositeContent sx={{ flex: 0, minWidth: 0, p: 0, m: 0 }} />
-              <TimelineSeparator>
-                <TimelineDot
+            <Box
+              key={num}
+              sx={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                flex: isLast ? '0 0 auto' : '1 1 0',
+                minWidth: isLast ? 0 : 64,
+              }}
+            >
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, minWidth: 56 }}>
+                <Box
                   sx={{
                     width: 25,
                     height: 25,
-                    m: 0,
-                    boxShadow: 'none',
+                    borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    flexShrink: 0,
                     bgcolor: isActive || isCompleted ? 'primary.main' : '#e0e0e0',
                   }}
                 >
                   {isCompleted ? (
-                    <CheckIcon sx={{ fontSize: 16, color: '#fff' }} />
+                    <CheckIcon sx={{ fontSize: 14, color: '#fff' }} />
                   ) : (
-                    <Typography
-                      sx={{
-                        fontSize: 13,
-                        fontWeight: 700,
-                        color: isActive ? '#fff' : '#888',
-                        lineHeight: 1,
-                      }}
-                    >
+                    <Typography sx={{ fontSize: 12, fontWeight: 700, color: isActive ? '#fff' : '#888', lineHeight: 1 }}>
                       {num}
                     </Typography>
                   )}
-                </TimelineDot>
-                {!isLast && (
-                  <TimelineConnector
-                    sx={{
-                      flexGrow: 0,
-                      height: 12,
-                      my: 1,
-                      width: 2,
-                      borderRadius: 1,
-                      bgcolor: isCompleted ? 'primary.main' : '#e0e0e0',
-                    }}
-                  />
-                )}
-              </TimelineSeparator>
-              <TimelineContent sx={{ py: .5, px: 2, display: 'flex', minHeight: 25 }}>
+                </Box>
                 <Typography
                   sx={{
-                    fontSize: 13,
+                    fontSize: 10.5,
+                    textAlign: 'center',
                     fontWeight: isActive ? 700 : 400,
                     color: isActive ? '#111' : isCompleted ? 'primary.main' : '#999',
                   }}
                 >
                   {step.label}
                 </Typography>
-              </TimelineContent>
-            </TimelineItem>
+              </Box>
+              {!isLast && (
+                <Box
+                  sx={{
+                    flex: 1,
+                    height: 2,
+                    mt: '12px',
+                    mx: 1,
+                    minWidth: 16,
+                    borderRadius: 1,
+                    bgcolor: isCompleted ? 'primary.main' : '#e0e0e0',
+                  }}
+                />
+              )}
+            </Box>
           );
         })}
-      </Timeline>
-    </Box>
+      </Box>
+
+      {/* Vertical timeline for medium screens and up */}
+      <Box sx={{ display: { xs: 'none', md: 'block' }, width: 210, flexShrink: 0, py: 3, alignSelf: 'stretch' }}>
+        <Timeline sx={{ p: 0, m: 0 }}>
+          {STEPS.map((step, i) => {
+            const num = (i + 1) as Step;
+            const isActive = num === currentStep;
+            const isCompleted = num < currentStep;
+            const isLast = i === STEPS.length - 1;
+
+            return (
+              <TimelineItem key={num} sx={{ minHeight: 56 }}>
+                <TimelineOppositeContent sx={{ flex: 0, minWidth: 0, p: 0, m: 0 }} />
+                <TimelineSeparator>
+                  <TimelineDot
+                    sx={{
+                      width: 25,
+                      height: 25,
+                      m: 0,
+                      boxShadow: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      bgcolor: isActive || isCompleted ? 'primary.main' : '#e0e0e0',
+                    }}
+                  >
+                    {isCompleted ? (
+                      <CheckIcon sx={{ fontSize: 16, color: '#fff' }} />
+                    ) : (
+                      <Typography
+                        sx={{
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: isActive ? '#fff' : '#888',
+                          lineHeight: 1,
+                        }}
+                      >
+                        {num}
+                      </Typography>
+                    )}
+                  </TimelineDot>
+                  {!isLast && (
+                    <TimelineConnector
+                      sx={{
+                        flexGrow: 0,
+                        height: 12,
+                        my: 1,
+                        width: 2,
+                        borderRadius: 1,
+                        bgcolor: isCompleted ? 'primary.main' : '#e0e0e0',
+                      }}
+                    />
+                  )}
+                </TimelineSeparator>
+                <TimelineContent sx={{ py: .5, px: 2, display: 'flex', minHeight: 25 }}>
+                  <Typography
+                    sx={{
+                      fontSize: 13,
+                      fontWeight: isActive ? 700 : 400,
+                      color: isActive ? '#111' : isCompleted ? 'primary.main' : '#999',
+                    }}
+                  >
+                    {step.label}
+                  </Typography>
+                </TimelineContent>
+              </TimelineItem>
+            );
+          })}
+        </Timeline>
+      </Box>
+    </>
   );
 }

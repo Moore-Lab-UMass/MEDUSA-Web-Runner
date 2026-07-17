@@ -10,7 +10,7 @@ const NAV_LINKS = ['Simulation Tool', 'About', 'Help'];
 export default function Header() {
   return (
     <AppBar position="sticky" elevation={0} color="primary" sx={{ top: 0, zIndex: (theme) => theme.zIndex.appBar }}>
-      <Toolbar sx={{ minHeight: 56, px: 3, gap: 3 }}>
+      <Toolbar sx={{ minHeight: 56, px: { xs: 2, sm: 3 }, gap: { xs: 1, sm: 3 } }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
           <Box
             sx={{
@@ -31,7 +31,7 @@ export default function Header() {
 
         <Box sx={{ flex: 1 }} />
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 0.5 }}>
           {NAV_LINKS.map((label) => (
             <Button
               key={label}
@@ -57,6 +57,7 @@ export default function Header() {
             textTransform: 'none',
             px: 2.5,
             borderRadius: 1.5,
+            flexShrink: 0,
           }}
         >
           Sign in

@@ -19,8 +19,17 @@ interface Props {
 export default function Results({ onBack, onNewAnalysis }: Props) {
   return (
     <Box sx={{ width: '100%' }}>
-      <Paper variant="outlined" sx={{ p: 3, bgcolor: '#f5f6f7', borderColor: '#e5e7ea' }}>
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
+      <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, bgcolor: '#f5f6f7', borderColor: '#e5e7ea' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'stretch', sm: 'flex-start' },
+            justifyContent: 'space-between',
+            gap: 2,
+            mb: 2,
+          }}
+        >
           <Box>
             <Typography variant="h5" sx={{ mb: 0.5 }}>Results overview</Typography>
             <Typography sx={{ fontSize: 13, color: '#888' }}>
@@ -32,7 +41,7 @@ export default function Results({ onBack, onNewAnalysis }: Props) {
             color="primary"
             disableElevation
             startIcon={<DownloadIcon sx={{ fontSize: 15 }} />}
-            sx={{ textTransform: 'none' }}
+            sx={{ textTransform: 'none', alignSelf: { xs: 'flex-start', sm: 'auto' } }}
           >
             Download Output Files
           </Button>
@@ -42,7 +51,7 @@ export default function Results({ onBack, onNewAnalysis }: Props) {
 
         <Paper sx={{ p: 1 }}>
           <TwoPaneLayout
-            direction={"row"}
+            direction={{ xs: 'column', md: 'row' }}
             TableComponent={<TableTabs />}
             plots={[
               {

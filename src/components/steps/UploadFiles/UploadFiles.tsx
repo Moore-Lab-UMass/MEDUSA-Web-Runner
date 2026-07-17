@@ -32,7 +32,7 @@ export default function UploadFiles({ trtFile, untFile, onFileDrop, onFileRemove
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Paper variant="outlined" sx={{ p: 5, bgcolor: '#f5f6f7', borderColor: '#e5e7ea', minHeight: 600 }}>
+      <Paper variant="outlined" sx={{ p: { xs: 2.5, sm: 5 }, bgcolor: '#f5f6f7', borderColor: '#e5e7ea', minHeight: { xs: 'auto', sm: 600 } }}>
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>Upload Data File</Typography>
         <Grid container spacing={6}>
           <Grid size={{ xs: 12, md: 6 }}>
