@@ -17,8 +17,6 @@ interface Props {
   onNext: () => void;
 }
 
-const ACCEPTED = '.csv,.tsv,.json,.xlsx,.fasta,.bed,.vcf';
-
 export default function UploadFiles({ trtFile, untFile, onFileDrop, onFileRemove, onNext }: Props) {
   const trtInputRef = useRef<HTMLInputElement>(null);
   const untInputRef = useRef<HTMLInputElement>(null);
@@ -28,7 +26,8 @@ export default function UploadFiles({ trtFile, untFile, onFileDrop, onFileRemove
     input.value = '';
   };
 
-  const canProceed = !!trtFile && !!untFile;
+  const hasErrors = !!trtFile?.error || !!untFile?.error;
+  const canProceed = !!trtFile && !!untFile && !hasErrors;
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -60,20 +59,34 @@ export default function UploadFiles({ trtFile, untFile, onFileDrop, onFileRemove
         <input
           ref={trtInputRef}
           type="file"
-          accept={ACCEPTED}
+          accept={'.csv'}
           style={{ display: 'none' }}
           onChange={(e) => handleFileInput('trt', e.target)}
         />
         <input
           ref={untInputRef}
           type="file"
-          accept={ACCEPTED}
+          accept={'.csv'}
           style={{ display: 'none' }}
           onChange={(e) => handleFileInput('unt', e.target)}
         />
       </Paper>
 
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          gap: 2,
+          mt: 3,
+        }}
+      >
+        {hasErrors && (
+          <Typography sx={{ fontSize: 13, color: 'error.main', fontWeight: 500 }}>
+            Fix the file errors above before continuing.
+          </Typography>
+        )}
         <Button
           variant="contained"
           color="primary"

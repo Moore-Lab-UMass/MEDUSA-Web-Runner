@@ -8,9 +8,10 @@ import LinearProgress from '@mui/material/LinearProgress';
 import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { UploadedFile } from '@/types';
 
-const ACCEPTED_LABEL = 'CSV, TSV, JSON, XLSX, FASTA, BED, VCF (max. 3MB)';
+const ACCEPTED_LABEL = 'CSV (max. 3MB)';
 
 export default function UploadCard({
   label,
@@ -43,7 +44,8 @@ export default function UploadCard({
             display: 'flex',
             alignItems: 'center',
             gap: 3,
-            border: '1px solid #e5e7ea',
+            border: '1px solid',
+            borderColor: file.error ? 'error.main' : '#e5e7ea',
             borderRadius: 1.5,
             px: 3,
             py: 4,
@@ -58,25 +60,35 @@ export default function UploadCard({
               width: 34,
               height: 34,
               borderRadius: 1,
-              bgcolor: '#eef3ee',
+              bgcolor: file.error ? '#fdecea' : '#eef3ee',
               flexShrink: 0,
             }}
           >
-            <UploadFileOutlinedIcon sx={{ fontSize: 18, color: 'primary.main' }} />
+            {file.error ? (
+              <ErrorOutlineIcon sx={{ fontSize: 18, color: 'error.main' }} />
+            ) : (
+              <UploadFileOutlinedIcon sx={{ fontSize: 18, color: 'primary.main' }} />
+            )}
           </Box>
           <Box sx={{ flex: 1, minWidth: 0, gap: .5, display: 'flex', flexDirection: 'column' }}>
             <Typography noWrap sx={{ fontSize: 13.5, fontWeight: 600, color: '#222' }}>{file.name}</Typography>
-            <Typography sx={{ fontSize: 11.5, color: '#888', mb: 0.5 }}>{file.sizeMB} · Complete</Typography>
-            <LinearProgress
-              variant="determinate"
-              value={100}
-              sx={{
-                height: 4,
-                borderRadius: 2,
-                bgcolor: '#e5e7ea',
-                '& .MuiLinearProgress-bar': { bgcolor: 'primary.main', borderRadius: 2 },
-              }}
-            />
+            {file.error ? (
+              <Typography sx={{ fontSize: 11.5, color: 'error.main', fontWeight: 600 }}>{file.error}</Typography>
+            ) : (
+              <>
+                <Typography sx={{ fontSize: 11.5, color: '#888', mb: 0.5 }}>{file.sizeMB} · Complete</Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={100}
+                  sx={{
+                    height: 4,
+                    borderRadius: 2,
+                    bgcolor: '#e5e7ea',
+                    '& .MuiLinearProgress-bar': { bgcolor: 'primary.main', borderRadius: 2 },
+                  }}
+                />
+              </>
+            )}
           </Box>
           <IconButton onClick={onRemove} size="small" sx={{ flexShrink: 0 }}>
             <DeleteOutlineIcon sx={{ fontSize: 18, color: '#888' }} />

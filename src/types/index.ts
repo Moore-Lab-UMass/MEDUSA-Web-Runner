@@ -22,6 +22,7 @@ export interface FormValues {
 export interface UploadedFile {
   name: string;
   sizeMB: string;
+  error?: string;
 }
 
 export type Step = 1 | 2 | 3 | 4;

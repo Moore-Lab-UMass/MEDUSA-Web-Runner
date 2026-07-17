@@ -7,6 +7,7 @@ import UploadFiles from './steps/UploadFiles/UploadFiles';
 import SetParameters from './steps/SetParameters/SetParameters';
 import RunAnalysis from './steps/RunAnalysis/RunAnalysis';
 import Results from './steps/Results/Results';
+import { validateCsvFile } from './steps/UploadFiles/validateCsv';
 import { Step, FormValues, UploadedFile } from '@/types';
 
 const DEFAULT_FORM: FormValues = {
@@ -40,10 +41,12 @@ export default function MedusaApp() {
     setFormValues((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleFileDrop = (type: 'trt' | 'unt', file: File) => {
+  const handleFileDrop = async (type: 'trt' | 'unt', file: File) => {
     const sizeMB = (file.size / 1024 / 1024).toFixed(1) + ' MB';
-    if (type === 'trt') setTrtFile({ name: file.name, sizeMB });
-    else setUntFile({ name: file.name, sizeMB });
+    const error = await validateCsvFile(file);
+    const uploaded: UploadedFile = { name: file.name, sizeMB, error };
+    if (type === 'trt') setTrtFile(uploaded);
+    else setUntFile(uploaded);
   };
 
   const handleFileRemove = (type: 'trt' | 'unt') => {
