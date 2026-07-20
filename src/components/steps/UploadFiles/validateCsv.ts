@@ -19,7 +19,7 @@ export async function validateCsvFile(file: File): Promise<string | undefined> {
   const missing = REQUIRED_COLUMNS.filter((col) => !headers.includes(col));
 
   if (missing.length > 0) {
-    return `Missing required column${missing.length > 1 ? 's' : ''}: ${missing.join(', ')}`;
+    return `Missing required header${missing.length > 1 ? 's' : ''}: ${missing.join(', ')}`;
   }
   return undefined;
 }
