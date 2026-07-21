@@ -2561,9 +2561,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@weng-lab/ui-components@npm:^3.1.6":
-  version: 3.1.6
-  resolution: "@weng-lab/ui-components@npm:3.1.6"
+"@weng-lab/ui-components@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "@weng-lab/ui-components@npm:3.2.0"
   peerDependencies:
     "@emotion/react": ^11.14.0
     "@emotion/styled": ^11.14.0
@@ -2572,7 +2572,7 @@ __metadata:
     "@mui/x-data-grid-premium": ^8.18.0
     react: ^19.1.0
     react-dom: ^19.1.0
-  checksum: 10c0/27b12b9a0cc25085995af4904abe7344979ed3fbebbc2bd5f81d67ce5b911b06f4b0acbe7fea35a535518f732afb0e85eda77081b669da3b472e2bc925bbb521
+  checksum: 10c0/2d67e023dedaf52582a687d37a84aedf201389aff01cc12cabb33dfa152886e887d0d435125ef77951b88011b0b8c11a86d3447df85db9bcb754050780ca0718
   languageName: node
   linkType: hard
 
@@ -5128,7 +5128,7 @@ __metadata:
     "@types/react": "npm:^19"
     "@types/react-dom": "npm:^19"
     "@visx/visx": "npm:^3.12.0"
-    "@weng-lab/ui-components": "npm:^3.1.6"
+    "@weng-lab/ui-components": "npm:^3.2.0"
     "@weng-lab/visualization": "npm:^1.6.1"
     eslint: "npm:^9"
     eslint-config-next: "npm:16.2.10"
