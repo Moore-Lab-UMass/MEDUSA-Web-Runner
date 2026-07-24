@@ -6,10 +6,44 @@ import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 
 const COLUMNS = [
-  { heading: 'Lorem ipsum', items: ['Lorem ipsum', 'Lorem ipsum', 'Lorem ipsum', 'Lorem ipsum'] },
-  { heading: 'Lorem ipsum', items: ['Lorem ipsum', 'Lorem ipsum', 'Lorem ipsum'] },
-  { heading: 'Lorem ipsum', items: ['Lorem ipsum', 'Lorem ipsum', 'Lorem ipsum'] },
-  { heading: 'Lorem ipsum', items: ['Lorem ipsum', 'Lorem ipsum', 'Lorem ipsum', 'Lorem ipsum'] },
+  {
+    id: 'col-1',
+    heading: 'Lorem ipsum',
+    items: [
+      { id: 'col-1-item-1', label: 'Lorem ipsum' },
+      { id: 'col-1-item-2', label: 'Lorem ipsum' },
+      { id: 'col-1-item-3', label: 'Lorem ipsum' },
+      { id: 'col-1-item-4', label: 'Lorem ipsum' },
+    ],
+  },
+  {
+    id: 'col-2',
+    heading: 'Lorem ipsum',
+    items: [
+      { id: 'col-2-item-1', label: 'Lorem ipsum' },
+      { id: 'col-2-item-2', label: 'Lorem ipsum' },
+      { id: 'col-2-item-3', label: 'Lorem ipsum' },
+    ],
+  },
+  {
+    id: 'col-3',
+    heading: 'Lorem ipsum',
+    items: [
+      { id: 'col-3-item-1', label: 'Lorem ipsum' },
+      { id: 'col-3-item-2', label: 'Lorem ipsum' },
+      { id: 'col-3-item-3', label: 'Lorem ipsum' },
+    ],
+  },
+  {
+    id: 'col-4',
+    heading: 'Lorem ipsum',
+    items: [
+      { id: 'col-4-item-1', label: 'Lorem ipsum' },
+      { id: 'col-4-item-2', label: 'Lorem ipsum' },
+      { id: 'col-4-item-3', label: 'Lorem ipsum' },
+      { id: 'col-4-item-4', label: 'Lorem ipsum' },
+    ],
+  },
 ];
 
 export default function Footer() {
@@ -36,20 +70,20 @@ export default function Footer() {
         </Box>
 
         <Grid container spacing={4}>
-          {COLUMNS.map((col, i) => (
-            <Grid key={i} size={{ xs: 6, sm: 3 }}>
+          {COLUMNS.map((col) => (
+            <Grid key={col.id} size={{ xs: 6, sm: 3 }}>
               <Typography sx={{ fontWeight: 700, fontSize: 13, color: '#fff', mb: 1.5 }}>
                 {col.heading}
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {col.items.map((item, j) => (
+                {col.items.map((item) => (
                   <Link
-                    key={j}
+                    key={item.id}
                     href="#"
                     underline="hover"
                     sx={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', '&:hover': { color: '#fff' } }}
                   >
-                    {item}
+                    {item.label}
                   </Link>
                 ))}
               </Box>
