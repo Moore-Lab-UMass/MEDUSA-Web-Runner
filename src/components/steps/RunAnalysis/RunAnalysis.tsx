@@ -36,16 +36,18 @@ export default function RunAnalysis({ formValues, onCancel, onBack, onViewResult
     [seqIndex],
   );
 
-  const dateCreated = useMemo(
-    () => new Date().toLocaleString('en-US', {
-      month: '2-digit',
-      day: '2-digit',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    }),
-    [],
-  );
+  const [dateCreated, setDateCreated] = useState('');
+  useEffect(() => {
+    setDateCreated(
+      new Date().toLocaleString('en-US', {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      }),
+    );
+  }, []);
 
   return (
     <Box sx={{ width: '100%' }}>

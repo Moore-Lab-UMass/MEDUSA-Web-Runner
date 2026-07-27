@@ -43,7 +43,7 @@ export default function Sidebar({ currentStep }: SidebarProps) {
 
           return (
             <Box
-              key={num}
+              key={step.label}
               sx={{
                 display: 'flex',
                 alignItems: 'flex-start',
@@ -111,7 +111,7 @@ export default function Sidebar({ currentStep }: SidebarProps) {
             const isLast = i === STEPS.length - 1;
 
             return (
-              <TimelineItem key={num} sx={{ minHeight: 56 }}>
+              <TimelineItem key={step.label} sx={{ minHeight: 56 }}>
                 <TimelineOppositeContent sx={{ flex: 0, minWidth: 0, p: 0, m: 0 }} />
                 <TimelineSeparator>
                   <TimelineDot
