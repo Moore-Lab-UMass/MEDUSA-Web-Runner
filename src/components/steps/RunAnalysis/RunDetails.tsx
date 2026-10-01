@@ -53,7 +53,7 @@ export default function RunDetails({
       </Box>
       <Button
         size="small"
-        sx={{ mt: 0.75, fontSize: 12, color: '#1565c0', p: 0, minWidth: 0, textTransform: 'none' }}
+        sx={{ mt: 0.75, fontSize: 12, color: '#1565c0', p: 0, minWidth: 0 }}
       >
         See more details
       </Button>

@@ -1,18 +1,27 @@
 'use client';
 import Image from 'next/image';
+import NextLink from 'next/link';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 
-const NAV_LINKS = ['Simulation Tool', 'About', 'Help'];
+const NAV_LINKS = [
+  { label: 'Simulation Tool', href: '/simulator' },
+  { label: 'About', href: '#' },
+  { label: 'Help', href: '#' },
+];
 
 export default function Header() {
   return (
-    <AppBar position="sticky" elevation={0} sx={{ top: 0, zIndex: (theme) => theme.zIndex.appBar, bgcolor: 'primary.dark' }}>
+    <AppBar position="sticky" elevation={4} sx={{ top: 0, zIndex: (theme) => theme.zIndex.appBar, bgcolor: 'primary.dark' }}>
       <Toolbar sx={{ minHeight: 64, px: { xs: 2, sm: 4 }, gap: { xs: 1, sm: 3 } }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box
+          component={NextLink}
+          href="/"
+          sx={{ display: 'flex', alignItems: 'center', gap: 2, textDecoration: 'none' }}
+        >
           <Box
             sx={{
               width: 48,
@@ -36,13 +45,14 @@ export default function Header() {
         </Box>
         <Box sx={{ flex: 1 }} />
         <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 0.5 }}>
-          {NAV_LINKS.map((label) => (
+          {NAV_LINKS.map(({ label, href }) => (
             <Button
               key={label}
+              component={NextLink}
+              href={href}
               sx={{
                 color: 'rgba(255,255,255,0.85)',
                 fontSize: 13,
-                textTransform: 'none',
                 '&:hover': { color: '#fff', bgcolor: 'rgba(255,255,255,0.06)' },
               }}
             >
@@ -57,7 +67,6 @@ export default function Header() {
           sx={{
             fontWeight: 700,
             fontSize: 13,
-            textTransform: 'none',
             px: 2.5,
             borderRadius: 1.5,
             flexShrink: 0,

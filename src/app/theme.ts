@@ -14,6 +14,11 @@ const brandPalette = {
 };
 
 const theme = createTheme({
+  typography: {
+    button: {
+      textTransform: "none",
+    },
+  },
   colorSchemes: {
     light: {
       palette: brandPalette,

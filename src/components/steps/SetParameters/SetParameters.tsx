@@ -188,7 +188,7 @@ export default function SetParameters({
       </Paper>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={onBack} sx={{ textTransform: 'none' }}>
+        <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={onBack}>
           Back
         </Button>
         <Button
@@ -197,7 +197,7 @@ export default function SetParameters({
           endIcon={<ArrowForwardIcon />}
           onClick={onNext}
           disableElevation
-          sx={{ px: 3, textTransform: 'none' }}
+          sx={{ px: 3 }}
         >
           Run Simulation
         </Button>

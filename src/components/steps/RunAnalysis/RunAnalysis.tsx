@@ -64,7 +64,7 @@ export default function RunAnalysis({ formValues, onCancel, onBack, onViewResult
       </Paper>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-        <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={onBack} sx={{ textTransform: 'none' }}>
+        <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={onBack}>
           Back
         </Button>
         <Button
@@ -73,7 +73,7 @@ export default function RunAnalysis({ formValues, onCancel, onBack, onViewResult
           onClick={onViewResults}
           disabled={!done}
           disableElevation
-          sx={{ px: 3, textTransform: 'none' }}
+          sx={{ px: 3 }}
         >
           View Results
         </Button>
