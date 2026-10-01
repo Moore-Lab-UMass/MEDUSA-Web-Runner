@@ -61,9 +61,23 @@ export default function Footer() {
       }}
     >
       <Box sx={{ px: { xs: 2, sm: 4, md: 7.5 }, pt: 2, pb: 1.5 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
-          <Image src="/logo-light.png" alt="MEDUSA logo" width={36} height={36} />
-          <Typography sx={{ color: 'secondary.main', fontSize: 18, letterSpacing: 0.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2.5 }}>
+          <Box
+            sx={{
+              width: 48,
+              height: 48,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <Image src="/logo-light.png" alt="MEDUSA logo" width={46} height={46} />
+          </Box>
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 400, letterSpacing: 1, color: 'secondary.main', lineHeight: 1, fontSize: 24 }}
+          >
             MEDUSA
           </Typography>
         </Box>

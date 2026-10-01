@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -10,27 +11,30 @@ const NAV_LINKS = ['Simulation Tool', 'About', 'Help'];
 export default function Header() {
   return (
     <AppBar position="sticky" elevation={0} color="primary" sx={{ top: 0, zIndex: (theme) => theme.zIndex.appBar }}>
-      <Toolbar sx={{ minHeight: 56, px: { xs: 2, sm: 3 }, gap: { xs: 1, sm: 3 } }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+      <Toolbar sx={{ minHeight: 64, px: { xs: 2, sm: 4 }, gap: { xs: 1, sm: 3 } }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Box
             sx={{
-              width: 28,
-              height: 28,
+              width: 48,
+              height: 48,
               borderRadius: '50%',
               bgcolor: 'secondary.main',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               flexShrink: 0,
             }}
-          />
+          >
+            <Image src="/logo-dark.png" alt="MEDUSA logo" width={46} height={46} priority />
+          </Box>
           <Typography
             variant="h6"
-            sx={{ fontWeight: 800, letterSpacing: 1, color: '#fff', lineHeight: 1, fontSize: 18 }}
+            sx={{ fontWeight: 600, letterSpacing: 1, color: 'primary.contrastText', lineHeight: 1, fontSize: 20 }}
           >
             MEDUSA
           </Typography>
         </Box>
-
         <Box sx={{ flex: 1 }} />
-
         <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 0.5 }}>
           {NAV_LINKS.map((label) => (
             <Button
@@ -46,7 +50,6 @@ export default function Header() {
             </Button>
           ))}
         </Box>
-
         <Button
           variant="contained"
           color="secondary"
