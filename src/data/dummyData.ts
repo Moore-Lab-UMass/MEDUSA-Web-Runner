@@ -33,22 +33,18 @@ function generatePoints(
   return points;
 }
 
-function toVolcanoShape(points: ScatterPoint[], minY: number): ScatterPoint[] {
-  return points.map((p) => ({ x: p.x, y: parseFloat(Math.max(minY, Math.abs(p.y)).toFixed(3)) }));
-}
+// x = log2(relative growth rate), y = log2(relative death rate)
+// The background cloud is tilted so higher growth pairs with lower death
+const CLOUD_MEAN_X = -0.08;
+const CLOUD_TILT = 0.25;
 
-export const notSignificantData: ScatterPoint[] = toVolcanoShape(
-  generatePoints(42, 150, 0, 0.6, 1.9, 0.5),
-  0.05,
-);
-export const proDeathData: ScatterPoint[] = toVolcanoShape(
-  generatePoints(7, 25, -3.4, 6, 1.4, 1.6),
-  1.6,
-);
-export const antiDeathData: ScatterPoint[] = toVolcanoShape(
-  generatePoints(13, 25, 2.7, 6, 1, 1.6),
-  1.6,
-);
+export const notSignificantData: ScatterPoint[] = generatePoints(42, 180, CLOUD_MEAN_X, 0, 0.16, 0.06).map((p) => ({
+  x: p.x,
+  y: parseFloat((p.y - CLOUD_TILT * (p.x - CLOUD_MEAN_X)).toFixed(3)),
+}));
+// One point per gene in proDeathGenes / antiDeathGenes below
+export const proDeathData: ScatterPoint[] = generatePoints(7, 10, 0.03, -0.38, 0.1, 0.045);
+export const antiDeathData: ScatterPoint[] = generatePoints(13, 10, -0.2, 0.27, 0.22, 0.015);
 
 export const proDeathGenes = [
   { gene: 'CYLD', score: 3.21, pvalue: '1.2e-06', fdr: '3.4e-04' },

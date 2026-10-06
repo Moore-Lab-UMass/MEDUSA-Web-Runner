@@ -5,27 +5,41 @@ import Chip from '@mui/material/Chip';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { ScatterPlot, Point } from '@weng-lab/visualization';
-import { notSignificantData, proDeathData, antiDeathData } from '@/data/dummyData';
+import {
+  notSignificantData,
+  proDeathData,
+  antiDeathData,
+  proDeathGenes,
+  antiDeathGenes,
+} from '@/data/dummyData';
 
-type GeneGroup = { group: 'Anti-Death' | 'Pro-Death' | 'Not significant' };
+type GeneGroup = { group: 'Anti-Death' | 'Pro-Death' | 'Not significant'; gene?: string };
+
+const HIT_COLOR = '#a78bfa';
+const HIT_STROKE = '#7c3aed';
+const BACKGROUND_COLOR = '#b0b0b0';
 
 const pointData: Point<GeneGroup>[] = [
   ...notSignificantData.map((p) => ({
     ...p,
-    color: '#bdbdbd',
-    opacity: 0.5,
-    r: 2,
+    color: BACKGROUND_COLOR,
     metaData: { group: 'Not significant' as const },
   })),
-  ...proDeathData.map((p) => ({
+  ...proDeathData.map((p, i) => ({
     ...p,
-    color: '#2e7d32',
-    metaData: { group: 'Pro-Death' as const },
+    color: HIT_COLOR,
+    stroke: HIT_STROKE,
+    r: 5,
+    label: proDeathGenes[i].gene,
+    metaData: { group: 'Pro-Death' as const, gene: proDeathGenes[i].gene },
   })),
-  ...antiDeathData.map((p) => ({
+  ...antiDeathData.map((p, i) => ({
     ...p,
-    color: '#e53935',
-    metaData: { group: 'Anti-Death' as const },
+    color: HIT_COLOR,
+    stroke: HIT_STROKE,
+    r: 5,
+    label: antiDeathGenes[i].gene,
+    metaData: { group: 'Anti-Death' as const, gene: antiDeathGenes[i].gene },
   })),
 ];
 
@@ -36,15 +50,14 @@ const FILTER_CHIPS = [
 ];
 
 const LEGEND = [
-  { label: 'Anti-Death', color: '#e53935' },
-  { label: 'Pro-Death', color: '#2e7d32' },
-  { label: 'Not significant', color: '#bdbdbd' },
+  { label: 'Top hits', color: HIT_COLOR },
+  { label: 'Not significant', color: BACKGROUND_COLOR },
 ];
 
 export default function VolcanoPlot() {
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Typography sx={{ fontWeight: 600, fontSize: 14 }}>[Plot name]</Typography>
+      <Typography sx={{ fontWeight: 600, fontSize: 14 }}>Treated / Untreated</Typography>
       <Typography sx={{ fontSize: 12, color: '#888', mb: 1.5 }}>
         Treatment vs Control · 200 genes
       </Typography>
@@ -66,13 +79,21 @@ export default function VolcanoPlot() {
         ))}
       </Box>
 
-      <Box sx={{ flex: 1, minHeight: 100 }}>
+      {/* ScatterPlot draws the gradient's color bar past its own right edge, so pr reserves room for it */}
+      <Box sx={{ flex: 1, minHeight: 100, pr: 11 }}>
         <ScatterPlot
           pointData={pointData}
           loading={false}
-          leftAxisLabel="-log10(p)"
-          bottomAxisLabel="log2 Fold Change"
+          leftAxisLabel="log₂(Relative Death Rate)"
+          bottomAxisLabel="log₂(Relative Growth Rate)"
           disableZoom
+          border
+          originLine
+          // The color bar runs high (top) to low (bottom), so the top label is the blue end
+          backgroundGradient={{
+            colorScale: ['red', 'white', 'blue'],
+            legend: { label: 'L2FC TRvUT', minLabel: '0.8', maxLabel: '-0.8' },
+          }}
         />
       </Box>
 
@@ -83,10 +104,6 @@ export default function VolcanoPlot() {
             <Typography sx={{ fontSize: 12, color: '#666' }}>{label}</Typography>
           </Box>
         ))}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-          <Box sx={{ width: 14, height: 0, borderTop: '2px dashed #f9a825' }} />
-          <Typography sx={{ fontSize: 12, color: '#f9a825' }}>p = 0.05</Typography>
-        </Box>
       </Box>
     </Box>
   );
