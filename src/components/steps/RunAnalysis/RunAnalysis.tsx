@@ -50,8 +50,8 @@ export default function RunAnalysis({ formValues, onCancel, onBack, onViewResult
   }, []);
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <Paper sx={{ p: { xs: 2.5, sm: 4 } }}>
+    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', flex: { md: 1 } }}>
+      <Paper sx={{ p: { xs: 2.5, sm: 4 }, display: 'flex', flexDirection: 'column', flex: { md: 1 } }}>
         <JobHeader jobName="[Job name]" running={!done} onCancel={onCancel} />
         <RunDetails
           runId="102k.9d0iol.902"

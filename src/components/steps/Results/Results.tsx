@@ -18,8 +18,18 @@ interface Props {
 
 export default function Results({ onBack, onNewAnalysis }: Props) {
   return (
-    <Box sx={{ width: '100%' }}>
-      <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, bgcolor: '#f5f6f7', borderColor: '#e5e7ea' }}>
+    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', flex: { md: 1 } }}>
+      <Paper
+        variant="outlined"
+        sx={{
+          p: { xs: 2, sm: 3 },
+          bgcolor: '#f5f6f7',
+          borderColor: '#e5e7ea',
+          display: 'flex',
+          flexDirection: 'column',
+          flex: { md: 1 },
+        }}
+      >
         <Box
           sx={{
             display: 'flex',
@@ -49,9 +59,11 @@ export default function Results({ onBack, onNewAnalysis }: Props) {
 
         <StatCards />
 
-        <Paper sx={{ p: 1 }}>
+        {/* On md+ this card takes whatever height is left and the panes size to it (100cqh) */}
+        <Paper sx={{ p: 1, flex: { md: '1 1 0px' }, minHeight: { md: 336 }, containerType: { md: 'size' } }}>
           <TwoPaneLayout
             direction={{ xs: 'column', md: 'row' }}
+            rowHeight="100cqh"
             TableComponent={<TableTabs />}
             plots={[
               {

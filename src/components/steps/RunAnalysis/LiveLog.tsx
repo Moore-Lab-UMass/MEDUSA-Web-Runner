@@ -26,7 +26,7 @@ export default function LiveLog({ lines }: { lines: LogLine[] }) {
   );
 
   return (
-    <Box sx={{ mt: 3 }}>
+    <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', flex: { md: 1 } }}>
       <GlobalStyles
         styles={{
           '.medusa-live-log': {
@@ -44,20 +44,33 @@ export default function LiveLog({ lines }: { lines: LogLine[] }) {
           {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
         </IconButton>
       </Box>
-      <Collapse in={open}>
-        <Box sx={{ mt: 1.5, borderRadius: 1.5, overflow: 'hidden', bgcolor: '#0d1117', p: 1.5 }}>
-          <LazyLog
-            text={text}
-            follow
-            height={400}
-            enableLineNumbers={false}
-            enableGutters={false}
-            enableSearch={false}
-            selectableLines
-            className="medusa-live-log"
-          />
-        </Box>
-      </Collapse>
+      {/* On md+ this slot takes whatever height is left in the card and the log sizes to it (100cqh) */}
+      <Box sx={{ flex: { md: '1 1 0px' }, minHeight: { md: 160 }, containerType: { md: 'size' } }}>
+        <Collapse in={open}>
+          <Box sx={{ pt: 1.5, height: { md: '100cqh' } }}>
+            <Box
+              sx={{
+                height: { xs: 424, md: '100%' },
+                borderRadius: 1.5,
+                overflow: 'hidden',
+                bgcolor: '#0d1117',
+                p: 1.5,
+              }}
+            >
+              <LazyLog
+                text={text}
+                follow
+                height="auto"
+                enableLineNumbers={false}
+                enableGutters={false}
+                enableSearch={false}
+                selectableLines
+                className="medusa-live-log"
+              />
+            </Box>
+          </Box>
+        </Collapse>
+      </Box>
     </Box>
   );
 }
