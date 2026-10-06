@@ -91,7 +91,13 @@ export default function HowItWorks() {
                   }}
                 >
                   {s.image ? (
-                    <Image src={s.image} alt={`${s.title} screenshot`} fill style={{ objectFit: 'cover' }} />
+                    <Image
+                      src={s.image}
+                      alt={`${s.title} screenshot`}
+                      fill
+                      sizes="(min-width: 1200px) 752px, (min-width: 900px) 66vw, 100vw"
+                      style={{ objectFit: 'cover' }}
+                    />
                   ) : (
                     `${s.title} screenshot`
                   )}

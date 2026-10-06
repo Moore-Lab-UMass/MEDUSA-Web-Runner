@@ -14,12 +14,13 @@ import { LOG_LINES, PROGRESS_STEPS } from './logLines';
 
 interface Props {
   formValues: FormValues;
+  dateCreated: string;
   onCancel: () => void;
   onBack: () => void;
   onViewResults: () => void;
 }
 
-export default function RunAnalysis({ formValues, onCancel, onBack, onViewResults }: Props) {
+export default function RunAnalysis({ formValues, dateCreated, onCancel, onBack, onViewResults }: Props) {
   const [seqIndex, setSeqIndex] = useState(0);
   const done = seqIndex >= PROGRESS_STEPS.length - 1;
 
@@ -35,19 +36,6 @@ export default function RunAnalysis({ formValues, onCancel, onBack, onViewResult
     () => LOG_LINES.filter((line) => line.revealAt <= seqIndex),
     [seqIndex],
   );
-
-  const [dateCreated, setDateCreated] = useState('');
-  useEffect(() => {
-    setDateCreated(
-      new Date().toLocaleString('en-US', {
-        month: '2-digit',
-        day: '2-digit',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-      }),
-    );
-  }, []);
 
   return (
     <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', flex: { md: 1 } }}>

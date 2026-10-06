@@ -35,6 +35,7 @@ export default function MedusaApp() {
   const [trtFile, setTrtFile] = useState<UploadedFile | null>(null);
   const [untFile, setUntFile] = useState<UploadedFile | null>(null);
   const [formValues, setFormValues] = useState<FormValues>(DEFAULT_FORM);
+  const [runCreatedAt, setRunCreatedAt] = useState('');
 
   const handleFormChange = (field: keyof FormValues, value: string | boolean) => {
     setFormValues((prev) => ({ ...prev, [field]: value }));
@@ -51,6 +52,19 @@ export default function MedusaApp() {
   const handleFileRemove = (type: 'trt' | 'unt') => {
     if (type === 'trt') setTrtFile(null);
     else setUntFile(null);
+  };
+
+  const handleRunSimulation = () => {
+    setRunCreatedAt(
+      new Date().toLocaleString('en-US', {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      }),
+    );
+    setStep(3);
   };
 
   const handleNewAnalysis = () => {
@@ -80,12 +94,13 @@ export default function MedusaApp() {
               formValues={formValues}
               onFormChange={handleFormChange}
               onBack={() => setStep(1)}
-              onNext={() => setStep(3)}
+              onNext={handleRunSimulation}
             />
           )}
           {step === 3 && (
             <RunAnalysis
               formValues={formValues}
+              dateCreated={runCreatedAt}
               onCancel={() => setStep(1)}
               onBack={() => setStep(2)}
               onViewResults={() => setStep(4)}
