@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import MedusaApp from '@/components/MedusaApp';
+import MedusaApp from '@/common/components/MedusaApp';
 
 export const metadata: Metadata = {
   title: 'MEDUSA Web Runner',
