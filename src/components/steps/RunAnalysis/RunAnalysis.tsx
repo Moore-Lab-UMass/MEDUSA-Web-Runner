@@ -14,12 +14,13 @@ import { LOG_LINES, PROGRESS_STEPS } from './logLines';
 
 interface Props {
   formValues: FormValues;
+  dateCreated: string;
   onCancel: () => void;
   onBack: () => void;
   onViewResults: () => void;
 }
 
-export default function RunAnalysis({ formValues, onCancel, onBack, onViewResults }: Props) {
+export default function RunAnalysis({ formValues, dateCreated, onCancel, onBack, onViewResults }: Props) {
   const [seqIndex, setSeqIndex] = useState(0);
   const done = seqIndex >= PROGRESS_STEPS.length - 1;
 
@@ -36,22 +37,9 @@ export default function RunAnalysis({ formValues, onCancel, onBack, onViewResult
     [seqIndex],
   );
 
-  const [dateCreated, setDateCreated] = useState('');
-  useEffect(() => {
-    setDateCreated(
-      new Date().toLocaleString('en-US', {
-        month: '2-digit',
-        day: '2-digit',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-      }),
-    );
-  }, []);
-
   return (
-    <Box sx={{ width: '100%' }}>
-      <Paper sx={{ p: { xs: 2.5, sm: 4 } }}>
+    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', flex: { md: 1 } }}>
+      <Paper sx={{ p: { xs: 2.5, sm: 4 }, display: 'flex', flexDirection: 'column', flex: { md: 1 } }}>
         <JobHeader jobName="[Job name]" running={!done} onCancel={onCancel} />
         <RunDetails
           runId="102k.9d0iol.902"
@@ -64,7 +52,7 @@ export default function RunAnalysis({ formValues, onCancel, onBack, onViewResult
       </Paper>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-        <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={onBack} sx={{ textTransform: 'none' }}>
+        <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={onBack}>
           Back
         </Button>
         <Button
@@ -73,7 +61,7 @@ export default function RunAnalysis({ formValues, onCancel, onBack, onViewResult
           onClick={onViewResults}
           disabled={!done}
           disableElevation
-          sx={{ px: 3, textTransform: 'none' }}
+          sx={{ px: 3 }}
         >
           View Results
         </Button>

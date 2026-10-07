@@ -26,7 +26,7 @@ export default function TableTabs() {
           <Tab
             key={label}
             label={label}
-            sx={{ fontSize: 13, textTransform: 'none', minHeight: 36, py: 0.5 }}
+            sx={{ fontSize: 13, minHeight: 36, py: 0.5 }}
           />
         ))}
       </Tabs>

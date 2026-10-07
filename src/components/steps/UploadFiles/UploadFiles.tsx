@@ -94,7 +94,7 @@ export default function UploadFiles({ trtFile, untFile, onFileDrop, onFileRemove
           endIcon={<ArrowForwardIcon />}
           onClick={onNext}
           disableElevation
-          sx={{ px: 3, textTransform: 'none' }}
+          sx={{ px: 3 }}
         >
           Set Parameters
         </Button>

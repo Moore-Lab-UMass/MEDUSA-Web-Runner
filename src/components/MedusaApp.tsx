@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Sidebar from './Sidebar';
 import UploadFiles from './steps/UploadFiles/UploadFiles';
 import SetParameters from './steps/SetParameters/SetParameters';
@@ -36,6 +35,7 @@ export default function MedusaApp() {
   const [trtFile, setTrtFile] = useState<UploadedFile | null>(null);
   const [untFile, setUntFile] = useState<UploadedFile | null>(null);
   const [formValues, setFormValues] = useState<FormValues>(DEFAULT_FORM);
+  const [runCreatedAt, setRunCreatedAt] = useState('');
 
   const handleFormChange = (field: keyof FormValues, value: string | boolean) => {
     setFormValues((prev) => ({ ...prev, [field]: value }));
@@ -54,6 +54,19 @@ export default function MedusaApp() {
     else setUntFile(null);
   };
 
+  const handleRunSimulation = () => {
+    setRunCreatedAt(
+      new Date().toLocaleString('en-US', {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      }),
+    );
+    setStep(3);
+  };
+
   const handleNewAnalysis = () => {
     setTrtFile(null);
     setUntFile(null);
@@ -62,12 +75,9 @@ export default function MedusaApp() {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, bgcolor: '#fff', px: { xs: 2, sm: 3, md: 6, lg: 12, xl: 20 } }}>
-      <Typography sx={{ px: { xs: 1, sm: 3 }, pt: 2.5, pb: 1, fontWeight: 600, fontSize: 15, color: '#222' }}>
-        [MEDUSA Web runner]
-      </Typography>
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, flex: { md: 1 } }}>
         <Sidebar currentStep={step} />
-        <Box sx={{ flex: 1, minWidth: 0, p: { xs: 2, sm: 3 } }}>
+        <Box sx={{ flex: 1, minWidth: 0, p: { xs: 2, sm: 3 }, display: 'flex', flexDirection: 'column' }}>
           {step === 1 && (
             <UploadFiles
               trtFile={trtFile}
@@ -84,12 +94,13 @@ export default function MedusaApp() {
               formValues={formValues}
               onFormChange={handleFormChange}
               onBack={() => setStep(1)}
-              onNext={() => setStep(3)}
+              onNext={handleRunSimulation}
             />
           )}
           {step === 3 && (
             <RunAnalysis
               formValues={formValues}
+              dateCreated={runCreatedAt}
               onCancel={() => setStep(1)}
               onBack={() => setStep(2)}
               onViewResults={() => setStep(4)}

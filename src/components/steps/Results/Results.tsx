@@ -18,8 +18,18 @@ interface Props {
 
 export default function Results({ onBack, onNewAnalysis }: Props) {
   return (
-    <Box sx={{ width: '100%' }}>
-      <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, bgcolor: '#f5f6f7', borderColor: '#e5e7ea' }}>
+    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', flex: { md: 1 } }}>
+      <Paper
+        variant="outlined"
+        sx={{
+          p: { xs: 2, sm: 3 },
+          bgcolor: '#f5f6f7',
+          borderColor: '#e5e7ea',
+          display: 'flex',
+          flexDirection: 'column',
+          flex: { md: 1 },
+        }}
+      >
         <Box
           sx={{
             display: 'flex',
@@ -41,7 +51,7 @@ export default function Results({ onBack, onNewAnalysis }: Props) {
             color="primary"
             disableElevation
             startIcon={<DownloadIcon sx={{ fontSize: 15 }} />}
-            sx={{ textTransform: 'none', alignSelf: { xs: 'flex-start', sm: 'auto' } }}
+            sx={{ alignSelf: { xs: 'flex-start', sm: 'auto' } }}
           >
             Download Output Files
           </Button>
@@ -49,9 +59,11 @@ export default function Results({ onBack, onNewAnalysis }: Props) {
 
         <StatCards />
 
-        <Paper sx={{ p: 1 }}>
+        {/* On md+ this card takes whatever height is left and the panes size to it (100cqh) */}
+        <Paper sx={{ p: 1, flex: { md: '1 1 0px' }, minHeight: { md: 336 }, containerType: { md: 'size' } }}>
           <TwoPaneLayout
             direction={{ xs: 'column', md: 'row' }}
+            rowHeight="100cqh"
             TableComponent={<TableTabs />}
             plots={[
               {
@@ -63,7 +75,7 @@ export default function Results({ onBack, onNewAnalysis }: Props) {
         </Paper>
       </Paper>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2}}>
-        <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={onBack} sx={{ textTransform: 'none' }}>
+        <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={onBack}>
           Back
         </Button>
         <Button
@@ -72,7 +84,6 @@ export default function Results({ onBack, onNewAnalysis }: Props) {
           disableElevation
           startIcon={<RestartAltIcon sx={{ fontSize: 16 }} />}
           onClick={onNewAnalysis}
-          sx={{ textTransform: 'none' }}
         >
           Start over
         </Button>

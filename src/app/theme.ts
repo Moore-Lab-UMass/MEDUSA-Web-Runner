@@ -3,17 +3,22 @@ import { createTheme } from "@mui/material/styles";
 const brandPalette = {
   primary: {
     main: "#125e5e",
-    dark: "#072327",
+    dark: "#082326",
     contrastText: "#ffffff",
   },
   secondary: {
-    main: "#c3dc6f",
-    dark: "#b3cf58",
+    main: "#c4e8a0",
+    dark: "#7aac80",
     contrastText: "#123832",
   },
 };
 
 const theme = createTheme({
+  typography: {
+    button: {
+      textTransform: "none",
+    },
+  },
   colorSchemes: {
     light: {
       palette: brandPalette,

@@ -1,9 +1,9 @@
 'use client';
+import Image from 'next/image';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Grid';
 
 const COLUMNS = [
   {
@@ -13,7 +13,6 @@ const COLUMNS = [
       { id: 'col-1-item-1', label: 'Lorem ipsum' },
       { id: 'col-1-item-2', label: 'Lorem ipsum' },
       { id: 'col-1-item-3', label: 'Lorem ipsum' },
-      { id: 'col-1-item-4', label: 'Lorem ipsum' },
     ],
   },
   {
@@ -22,7 +21,6 @@ const COLUMNS = [
     items: [
       { id: 'col-2-item-1', label: 'Lorem ipsum' },
       { id: 'col-2-item-2', label: 'Lorem ipsum' },
-      { id: 'col-2-item-3', label: 'Lorem ipsum' },
     ],
   },
   {
@@ -32,6 +30,7 @@ const COLUMNS = [
       { id: 'col-3-item-1', label: 'Lorem ipsum' },
       { id: 'col-3-item-2', label: 'Lorem ipsum' },
       { id: 'col-3-item-3', label: 'Lorem ipsum' },
+      { id: 'col-3-item-4', label: 'Lorem ipsum' },
     ],
   },
   {
@@ -41,38 +40,52 @@ const COLUMNS = [
       { id: 'col-4-item-1', label: 'Lorem ipsum' },
       { id: 'col-4-item-2', label: 'Lorem ipsum' },
       { id: 'col-4-item-3', label: 'Lorem ipsum' },
-      { id: 'col-4-item-4', label: 'Lorem ipsum' },
     ],
   },
 ];
 
+const bottomLinkSx = { fontSize: 12, color: '#409393', '&:hover': { color: 'secondary.main' } };
+
 export default function Footer() {
   return (
-    <Box component="footer" sx={{ bgcolor: 'primary.dark', color: 'rgba(255,255,255,0.75)', mt: 'auto' }}>
-      <Box sx={{ maxWidth: 1200, mx: 'auto', px: { xs: 2, sm: 4 }, py: 5 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 4 }}>
+    <Box
+      component="footer"
+      sx={{
+        mt: 'auto',
+        bgcolor: 'primary.dark',
+        backgroundImage: 'url(/footer-bg.png)',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'right center',
+        backgroundSize: 'auto 100%',
+        color: 'primary.contrastText',
+      }}
+    >
+      <Box sx={{ px: { xs: 2, sm: 4, md: 7.5 }, pt: 2, pb: 1.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2.5 }}>
           <Box
             sx={{
-              px: 1.5,
-              py: 0.4,
-              borderRadius: 999,
-              bgcolor: 'secondary.main',
-              color: 'secondary.contrastText',
-              fontSize: 11,
-              fontWeight: 700,
+              width: 48,
+              height: 48,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
             }}
           >
-            Logo
+            <Image src="/logo-light.png" alt="MEDUSA logo" width={46} height={46} />
           </Box>
-          <Typography sx={{ fontWeight: 800, letterSpacing: 1, color: '#fff', fontSize: 16 }}>
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 400, letterSpacing: 1, color: 'secondary.main', lineHeight: 1, fontSize: 24 }}
+          >
             MEDUSA
           </Typography>
         </Box>
 
-        <Grid container spacing={4}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', rowGap: 3 }}>
           {COLUMNS.map((col) => (
-            <Grid key={col.id} size={{ xs: 6, sm: 3 }}>
-              <Typography sx={{ fontWeight: 700, fontSize: 13, color: '#fff', mb: 1.5 }}>
+            <Box key={col.id} sx={{ width: { xs: '50%', sm: 168 } }}>
+              <Typography sx={{ fontSize: 13, mb: 2 }}>
                 {col.heading}
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -81,25 +94,23 @@ export default function Footer() {
                     key={item.id}
                     href="#"
                     underline="hover"
-                    sx={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', '&:hover': { color: '#fff' } }}
+                    sx={{ fontSize: 11, color: 'primary.contrastText', opacity: 0.8, '&:hover': { opacity: 1 } }}
                   >
                     {item.label}
                   </Link>
                 ))}
               </Box>
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       </Box>
 
-      <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)' }} />
+      <Divider sx={{ mx: { xs: 2, sm: 4, md: 5.5 }, borderColor: 'primary.main' }} />
 
       <Box
         sx={{
-          maxWidth: 1200,
-          mx: 'auto',
-          px: { xs: 2, sm: 4 },
-          py: 2,
+          px: { xs: 2, sm: 4, md: 14 },
+          py: 1.5,
           display: 'flex',
           flexWrap: 'wrap',
           gap: 2,
@@ -107,14 +118,14 @@ export default function Footer() {
           alignItems: 'center',
         }}
       >
-        <Typography sx={{ fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>
+        <Typography sx={{ fontSize: 12, color: '#409393' }}>
           Copyright © lorem ipsum
         </Typography>
-        <Box sx={{ display: 'flex', gap: 3 }}>
-          <Link href="#" underline="hover" sx={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', '&:hover': { color: '#fff' } }}>
+        <Box sx={{ display: 'flex', gap: { xs: 3, sm: 9 }, mr: { md: 15 } }}>
+          <Link href="#" underline="hover" sx={bottomLinkSx}>
             Privacy & Policy
           </Link>
-          <Link href="#" underline="hover" sx={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', '&:hover': { color: '#fff' } }}>
+          <Link href="#" underline="hover" sx={bottomLinkSx}>
             Terms & Condition
           </Link>
         </Box>
