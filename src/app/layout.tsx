@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Box from "@mui/material/Box";
 import ThemeRegistry from "./ThemeRegistry";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import Header from "@/common/components/Header";
+import Footer from "@/common/components/Footer";
 
 export const metadata: Metadata = {
   title: "MEDUSA",

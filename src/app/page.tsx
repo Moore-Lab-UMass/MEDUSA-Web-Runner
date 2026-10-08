@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import Hero from '@/components/home/Hero';
-import WhatIsMedusa from '@/components/home/WhatIsMedusa';
-import HowItWorks from '@/components/home/HowItWorks';
-import ExampleDatasets from '@/components/home/ExampleDatasets';
-import RunLocally from '@/components/home/RunLocally';
-import CreateAccount from '@/components/home/CreateAccount';
+import Hero from '@/common/components/home/Hero';
+import WhatIsMedusa from '@/common/components/home/WhatIsMedusa';
+import HowItWorks from '@/common/components/home/HowItWorks';
+import ExampleDatasets from '@/common/components/home/ExampleDatasets';
+import RunLocally from '@/common/components/home/RunLocally';
+import CreateAccount from '@/common/components/home/CreateAccount';
 
 export const metadata: Metadata = {
   title: 'MEDUSA',
