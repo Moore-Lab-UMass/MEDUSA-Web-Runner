@@ -35,12 +35,13 @@ export async function proxyRequest({ url, token, method, request }: ProxyOptions
     );
   }
 
-  const data = await response.text();
-
   // 204/205/304 must not carry a body — Response throws if one is supplied.
   if (response.status === 204 || response.status === 205 || response.status === 304) {
     return new NextResponse(null, { status: response.status });
   }
+
+  // Every other status, errors included, is relayed with its body as it came.
+  const data = await response.text();
 
   return new NextResponse(data, {
     status: response.status,

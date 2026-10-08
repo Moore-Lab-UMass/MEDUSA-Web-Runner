@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -10,13 +10,37 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { LazyLog } from '@melloware/react-logviewer';
 import { LogChunk } from '@/types';
 
-export default function LiveLog({ chunks }: { chunks: LogChunk[] }) {
+const LINE_DELAY_MS = 80;
+// A longer backlog than this is shown at once, down to its last lines, so the log is never more
+// than a few seconds behind the run.
+const MAX_BACKLOG_LINES = 40;
+
+// Log lines arrive a chunk at a time. This hands them out one by one, so a chunk types itself in
+// while the next one is on its way. Lines already there on mount are not replayed.
+function useRevealedCount(total: number, animate: boolean) {
+  const [count, setCount] = useState(total);
+
+  useEffect(() => {
+    if (!animate || count >= total) return;
+    const timer = setTimeout(() => {
+      setCount((prev) => Math.min(total, Math.max(prev + 1, total - MAX_BACKLOG_LINES)));
+    }, LINE_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [animate, count, total]);
+
+  return animate ? Math.min(count, total) : total;
+}
+
+export default function LiveLog({ chunks, animate }: { chunks: LogChunk[]; animate: boolean }) {
   const [open, setOpen] = useState(true);
+
+  const lines = useMemo(() => chunks.flatMap((chunk) => chunk.lines), [chunks]);
+  const visible = useRevealedCount(lines.length, animate);
 
   // LazyLog renders this as plain text, never HTML. It needs a non-empty string to draw anything.
   const text = useMemo(
-    () => chunks.flatMap((chunk) => chunk.lines).join('\n') || 'Waiting for log output…',
-    [chunks],
+    () => lines.slice(0, visible).join('\n') || 'Waiting for log output…',
+    [lines, visible],
   );
 
   return (

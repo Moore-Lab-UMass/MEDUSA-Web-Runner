@@ -9,6 +9,7 @@ import StepLayout from './StepLayout';
 import RunAnalysis from './steps/RunAnalysis/RunAnalysis';
 import Results from './steps/Results/Results';
 import { useRun } from '@/common/hooks/useRun';
+import { isTerminal } from '@/common/medusaApi';
 import { useRunResults } from '@/common/hooks/useRunResults';
 
 export default function RunPage({ runId }: { runId: string }) {
@@ -57,6 +58,7 @@ export default function RunPage({ runId }: { runId: string }) {
           run={run}
           parameters={parameters}
           logs={logs}
+          animateLog={initialStatus !== null && !isTerminal(initialStatus)}
           connectionLost={connectionLost}
           onNewAnalysis={handleNewAnalysis}
           onViewResults={() => setView('results')}

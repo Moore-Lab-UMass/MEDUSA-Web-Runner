@@ -1,17 +1,12 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import LinearProgress from '@mui/material/LinearProgress';
-import Tooltip from '@mui/material/Tooltip';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 export default function RunProgress({ progress, message }: { progress: number; message: string | null }) {
   return (
     <Box sx={{ mt: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
         <Typography sx={{ fontWeight: 600, fontSize: 14 }}>Run Progress</Typography>
-        <Tooltip title="Overall completion of the current run">
-          <InfoOutlinedIcon sx={{ fontSize: 16, color: '#999' }} />
-        </Tooltip>
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <Box sx={{ flex: 1 }}>

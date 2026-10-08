@@ -6,6 +6,19 @@ import { LogChunk, RunParameters, RunState, RunStatus } from '@/types';
 const POLL_INTERVAL_MS = 2000;
 const MAX_BACKOFF_MS = 30000;
 
+// Resolves after `ms`, or as soon as the signal aborts, so an unmount never leaves a timer behind.
+function sleep(ms: number, signal: AbortSignal) {
+  return new Promise<void>((resolve) => {
+    const done = () => {
+      clearTimeout(timer);
+      signal.removeEventListener('abort', done);
+      resolve();
+    };
+    const timer = setTimeout(done, ms);
+    signal.addEventListener('abort', done);
+  });
+}
+
 /**
  * Loads a run's submitted parameters, then polls its status and log chunks until it reaches a
  * terminal status.
@@ -25,8 +38,8 @@ export function useRun(runId: string) {
 
   useEffect(() => {
     const controller = new AbortController();
-    const { signal } = controller;
-    let timer: ReturnType<typeof setTimeout> | undefined;
+    // Set by the cleanup alongside the abort. Nothing after an await touches state once it is true.
+    let cancelled = false;
     // The log cursor is a chunk sequence, and lives with the chunks it produced.
     let after = 0;
     let failures = 0;
@@ -35,8 +48,8 @@ export function useRun(runId: string) {
     // Fetches pages until one comes back short (or, once the run is over, empty).
     const fetchLogs = async (untilEmpty: boolean) => {
       for (;;) {
-        const page = await getLogs(runId, after, signal);
-        if (signal.aborted) return;
+        const page = await getLogs(runId, after, controller.signal);
+        if (cancelled) return;
         const cursor = after;
         const fresh = page.logs.filter((chunk) => chunk.sequence > cursor);
         if (fresh.length > 0) {
@@ -51,48 +64,56 @@ export function useRun(runId: string) {
       }
     };
 
-    const poll = async () => {
-      let delay = POLL_INTERVAL_MS;
+    // One pass. Resolves to how long to wait before the next, or null once polling is over.
+    const pollOnce = async () => {
       try {
         // Parameters never change after creation, so they are fetched once, inside the retry loop.
         if (!hasParameters) {
-          const { parameters } = await getParameters(runId, signal);
-          if (signal.aborted) return;
+          const { parameters } = await getParameters(runId, controller.signal);
+          if (cancelled) return null;
           setParameters(parameters);
           hasParameters = true;
         }
 
-        const state = await getRun(runId, signal);
-        if (signal.aborted) return;
+        const state = await getRun(runId, controller.signal);
+        if (cancelled) return null;
         setRun(state);
         setInitialStatus((prev) => prev ?? state.status);
 
         const terminal = isTerminal(state.status);
         await fetchLogs(terminal);
-        if (signal.aborted) return;
+        if (cancelled) return null;
 
         failures = 0;
         setConnectionLost(false);
-        if (terminal) return;
+        return terminal ? null : POLL_INTERVAL_MS;
       } catch (caught) {
-        if (signal.aborted) return;
+        if (cancelled) return null;
         if (caught instanceof MedusaApiError && (caught.status === 400 || caught.status === 404)) {
           setError(caught);
-          return;
+          return null;
         }
         failures += 1;
         setConnectionLost(true);
-        delay = Math.min(POLL_INTERVAL_MS * 2 ** failures, MAX_BACKOFF_MS);
+        return Math.min(POLL_INTERVAL_MS * 2 ** failures, MAX_BACKOFF_MS);
       }
-      // Scheduled only after the previous poll settles, so polls never overlap.
-      timer = setTimeout(poll, delay);
+    };
+
+    const poll = async () => {
+      // Each pass waits for the one before it to settle, so polls never overlap.
+      for (;;) {
+        const delay = await pollOnce();
+        if (delay === null) return;
+        await sleep(delay, controller.signal);
+        if (cancelled) return;
+      }
     };
 
     poll();
 
     return () => {
+      cancelled = true;
       controller.abort();
-      clearTimeout(timer);
     };
   }, [runId]);
 

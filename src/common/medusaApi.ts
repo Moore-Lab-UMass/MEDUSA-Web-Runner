@@ -24,14 +24,9 @@ export function isTerminal(status: RunStatus) {
 async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(BASE_URL + path, { ...init, cache: 'no-store' });
 
-  let body: unknown = null;
-  try {
-    body = await response.json();
-  } catch {
-    // A non-JSON body is reported through the status below.
-  }
-
   if (!response.ok) {
+    // A non-JSON error body is reported through the status alone.
+    const body: unknown = await response.json().catch(() => null);
     const error = (body as { error?: { code?: string; message?: string } } | null)?.error;
     throw new MedusaApiError(
       response.status,
@@ -39,6 +34,8 @@ async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
       error?.message ?? `Request failed (${response.status}).`,
     );
   }
+  // A success without a JSON body resolves to null.
+  const body: unknown = await response.json().catch(() => null);
   return body as T;
 }
 

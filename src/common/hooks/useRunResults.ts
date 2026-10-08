@@ -24,6 +24,8 @@ export function useRunResults(runId: string, parameters: RunParameters | null, s
     if (!succeeded || !parameters) return;
     const controller = new AbortController();
     const { signal } = controller;
+    // Set by the cleanup alongside the abort. Nothing after an await touches state once it is true.
+    let cancelled = false;
 
     const load = async () => {
       try {
@@ -39,22 +41,26 @@ export function useRunResults(runId: string, parameters: RunParameters | null, s
             // Straight to GCS: the signature in the URL is the authorization, so no headers are added.
             response = await fetch(url, { signal });
           } catch (caught) {
-            if (signal.aborted) return;
+            if (cancelled) return;
             throw new Error(`Could not download ${filename} from storage.`, { cause: caught });
           }
           if (!response.ok) throw new Error(`Could not download ${filename} (${response.status}).`);
           results = parseResults(mode, filename, await response.text(), parameters);
         }
 
-        if (!signal.aborted) setState({ status: 'ready', mode, results });
+        if (cancelled) return;
+        setState({ status: 'ready', mode, results });
       } catch (caught) {
-        if (signal.aborted) return;
+        if (cancelled) return;
         setState({ status: 'error', message: caught instanceof Error ? caught.message : 'Could not load results.' });
       }
     };
 
     load();
-    return () => controller.abort();
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
   }, [runId, parameters, succeeded]);
 
   return state;

@@ -30,6 +30,18 @@ const DEFAULT_FORM: FormValues = {
   plot: true,
 };
 
+// TEMP: fully parameterized test run, filled in by the "Load test parameters" button.
+const TEST_FORM: FormValues = {
+  ...DEFAULT_FORM,
+  npg: '0.03704',
+  t_end_unt: '32',
+  t_end_tr: '32',
+  grdrug1: '0.03704',
+  do_val: '4',
+  grdrug2: '0',
+  drdrug: '0.01786',
+};
+
 export default function MedusaApp() {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
@@ -42,6 +54,12 @@ export default function MedusaApp() {
   const handleFormChange = (field: keyof FormValues, value: string | boolean) => {
     setFormValues((prev) => ({ ...prev, [field]: value }));
     // The ED / drug-parameter rule spans several fields, so one edit can resolve errors on others.
+    setFormErrors({});
+  };
+
+  // TEMP
+  const handleLoadTestParameters = () => {
+    setFormValues(TEST_FORM);
     setFormErrors({});
   };
 
@@ -127,6 +145,7 @@ export default function MedusaApp() {
           formErrors={formErrors}
           submit={submit}
           onFormChange={handleFormChange}
+          onLoadTestParameters={handleLoadTestParameters}
           onBack={() => setStep(1)}
           onNext={handleRunSimulation}
         />

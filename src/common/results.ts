@@ -56,8 +56,9 @@ function scalar(cell: string | undefined): number | null {
 // The summary CSV a run of this mode produces, if it produced one. GM writes none without stats.
 export function summaryOutput(mode: RunMode, outputs: RunOutput[]): RunOutput | null {
   const candidates = mode === 'full' ? ['genelevel_pval.csv', 'genelevel.csv'] : ['genelevel_stats.csv'];
+  const byFilename = new Map(outputs.map((output) => [output.filename, output]));
   for (const name of candidates) {
-    const output = outputs.find((candidate) => candidate.filename === name);
+    const output = byFilename.get(name);
     if (output) return output;
   }
   return null;

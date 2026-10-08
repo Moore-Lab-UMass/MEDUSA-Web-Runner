@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
@@ -72,7 +72,9 @@ export default function VolcanoPlot({ genes, proDeath, antiDeath, geneList }: Pr
   // Measured here and handed to ScatterPlot as an explicit size. Left to measure itself, its size
   // is 0x0 until its first measurement lands, which is the case PLOT_MARGIN describes.
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
-  const measureRef = useCallback((node: HTMLDivElement | null) => {
+  const measureRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const node = measureRef.current;
     if (!node) return;
     const observer = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect;

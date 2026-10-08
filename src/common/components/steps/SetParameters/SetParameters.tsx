@@ -37,6 +37,8 @@ interface Props {
   formErrors: FormErrors;
   submit: SubmitState;
   onFormChange: (field: keyof FormValues, value: string | boolean) => void;
+  // TEMP
+  onLoadTestParameters: () => void;
   onBack: () => void;
   onNext: () => void;
 }
@@ -48,6 +50,7 @@ export default function SetParameters({
   formErrors,
   submit,
   onFormChange,
+  onLoadTestParameters,
   onBack,
   onNext,
 }: Props) {
@@ -237,9 +240,23 @@ export default function SetParameters({
       )}
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={onBack} disabled={submitting}>
-          Back
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1.5 }}>
+          <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={onBack} disabled={submitting}>
+            Back
+          </Button>
+          {/* TEMP: remove once testing is done */}
+          <Button
+            variant="text"
+            onClick={() => {
+              onLoadTestParameters();
+              // Most of the test values are advanced fields, so show them.
+              setShowAdvanced(true);
+            }}
+            disabled={submitting}
+          >
+            Load test parameters
+          </Button>
+        </Box>
         <Button
           variant="contained"
           color="primary"

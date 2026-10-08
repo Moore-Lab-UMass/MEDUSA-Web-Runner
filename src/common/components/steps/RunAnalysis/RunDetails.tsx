@@ -1,8 +1,5 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 export default function RunDetails({
   runId,
@@ -26,9 +23,6 @@ export default function RunDetails({
     <Box sx={{ mt: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
         <Typography sx={{ fontWeight: 600, fontSize: 14 }}>Run Details</Typography>
-        <Tooltip title="Metadata about this simulation run">
-          <InfoOutlinedIcon sx={{ fontSize: 16, color: '#999' }} />
-        </Tooltip>
       </Box>
       <Box
         sx={{
@@ -51,12 +45,6 @@ export default function RunDetails({
           </Typography>
         ))}
       </Box>
-      <Button
-        size="small"
-        sx={{ mt: 0.75, fontSize: 12, color: '#1565c0', p: 0, minWidth: 0 }}
-      >
-        See more details
-      </Button>
     </Box>
   );
 }
