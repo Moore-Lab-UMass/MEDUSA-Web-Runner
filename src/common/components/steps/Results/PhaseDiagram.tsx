@@ -2,9 +2,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { ScatterPlot, Point } from '@weng-lab/visualization';
 import { FullGeneRow } from '@/common/results';
 
@@ -14,12 +11,6 @@ const HIT_COLOR = '#a78bfa';
 const HIT_STROKE = '#7c3aed';
 const CONTROL_COLOR = '#6b6b6b';
 const BACKGROUND_COLOR = '#b0b0b0';
-
-const FILTER_CHIPS = [
-  { label: 'filterby option1 (200)', selected: true },
-  { label: 'filterby option2 (18)', icon: <ArrowUpwardIcon sx={{ fontSize: 13 }} /> },
-  { label: 'filterby option3 (27)', icon: <ArrowDownwardIcon sx={{ fontSize: 13 }} /> },
-];
 
 // ScatterPlot keeps 90px of each dimension for its axes (20 + 70 either way). At or below that
 // its drawable area is zero, and its background gradient then throws on a 0/0 colour stop.
@@ -87,27 +78,6 @@ export default function PhaseDiagram({ genes, proDeath, antiDeath, geneList }: P
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Typography sx={{ fontWeight: 600, fontSize: 14 }}>Treated / Untreated</Typography>
-      <Typography sx={{ fontSize: 12, color: '#888', mb: 1.5 }}>
-        Treatment vs Control · {genes.length.toLocaleString()} genes
-      </Typography>
-
-      <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-        {FILTER_CHIPS.map(({ label, selected, icon }) => (
-          <Chip
-            key={label}
-            label={label}
-            icon={icon}
-            variant={selected ? 'filled' : 'outlined'}
-            sx={{
-              fontSize: 12,
-              bgcolor: selected ? '#1a1a1a' : 'transparent',
-              color: selected ? '#fff' : '#555',
-              borderColor: '#d8dbe0',
-            }}
-          />
-        ))}
-      </Box>
 
       {/* ScatterPlot draws the gradient's color bar past its own right edge, so pr reserves room for it */}
       <Box ref={measureRef} sx={{ flex: 1, minHeight: 100, pr: 11, position: 'relative' }}>
@@ -119,9 +89,9 @@ export default function PhaseDiagram({ genes, proDeath, antiDeath, geneList }: P
               height={size.height}
               pointData={pointData}
               loading={false}
+              controlsPosition="right"
               leftAxisLabel="log₂(Relative Death Rate)"
               bottomAxisLabel="log₂(Relative Growth Rate)"
-              disableZoom
               border
               originLine
               // Decorative for now: the real background comes from simtable.csv, which a run only

@@ -11,7 +11,7 @@ export default function GeneTable({ genes, columns }: { genes: GeneRow[]; column
       getRowId={(row) => row.gene}
       density="compact"
       label="Gene Table"
-      initialState={{ pagination: { paginationModel: { pageSize: 5, page: 0 } } }}
+      initialState={{ pagination: { paginationModel: { pageSize: 10, page: 0 } } }}
     />
   );
 }

@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -9,13 +9,13 @@ import Paper from '@mui/material/Paper';
 import DownloadIcon from '@mui/icons-material/Download';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import ArrowBackIcon from '@mui/icons-material/KeyboardArrowLeft';
-import { TwoPaneLayout } from '@weng-lab/ui-components';
 import { RunResultsState } from '@/common/hooks/useRunResults';
 import { RunResults, SIGNIFICANCE_FDR, topHits } from '@/common/results';
 import { RunParameters } from '@/types';
 import StatCards, { StatCard } from './StatCards';
 import TableTabs from './TableTabs';
 import PhaseDiagram from './PhaseDiagram';
+import PlotTabs, { PlotTab } from './PlotTabs';
 import OutputFilesDialog from './OutputFilesDialog';
 import { fullColumns, GM_COLUMNS } from './columns';
 
@@ -29,6 +29,10 @@ interface Props {
 
 const MODE_LABELS = { full: 'Fully parameterized', gm: 'GM' };
 
+// The plot card, tab bar included. The table card fits ten rows a page (see GeneTable).
+const PLOT_HEIGHT = 650;
+const TABLE_HEIGHT = 600;
+
 // The gene table's tabs. Each stat card opens the tab that lists what it counts.
 const PRO_DEATH = 'Pro-Death';
 const ANTI_DEATH = 'Anti-Death';
@@ -38,18 +42,27 @@ const ALL_GENES = 'All Genes';
 
 function ResultsBody({ results, parameters }: { results: RunResults; parameters: RunParameters | null }) {
   const [tab, setTab] = useState(PRO_DEATH);
+  const tableRef = useRef<HTMLDivElement>(null);
+
+  // The table sits below the plot, so a card that switches its tab also brings it into view.
+  const openTab = (label: string) => {
+    setTab(label);
+    tableRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
 
   // Control groups are not genes, so they stay out of the counts.
   const total = {
     label: 'Total Genes',
     value: results.rows.filter((row) => !row.control).length.toLocaleString(),
-    onClick: () => setTab(ALL_GENES),
+    onClick: () => openTab(ALL_GENES),
   };
 
-  // The two modes share a layout but not their columns, their third stat, or a plot.
+  // The two modes share a layout but not their columns, their third stat, or their plots.
   let cards: StatCard[];
   let table: React.ReactNode;
-  let plot: React.ReactNode;
+  let plots: PlotTab[];
+  // Undefined leaves the plot card as tall as its content.
+  let plotHeight: number | undefined;
 
   if (results.mode === 'full') {
     const { proDeath, antiDeath } = topHits(results.rows);
@@ -57,13 +70,13 @@ function ResultsBody({ results, parameters }: { results: RunResults; parameters:
       (row) => !row.control && row.deathFdr !== null && row.deathFdr < SIGNIFICANCE_FDR,
     );
     cards = [
-      { label: 'Top Hits (Pro-Death)', value: String(proDeath.length), onClick: () => setTab(PRO_DEATH) },
-      { label: 'Top Hits (Anti-Death)', value: String(antiDeath.length), onClick: () => setTab(ANTI_DEATH) },
+      { label: 'Top Hits (Pro-Death)', value: String(proDeath.length), onClick: () => openTab(PRO_DEATH) },
+      { label: 'Top Hits (Anti-Death)', value: String(antiDeath.length), onClick: () => openTab(ANTI_DEATH) },
       // Without stats the run has no FDR to count by, and so no tab to open.
       {
         label: `Significant Genes (death FDR < ${SIGNIFICANCE_FDR})`,
         value: results.hasStats ? significant.length.toLocaleString() : '—',
-        onClick: results.hasStats ? () => setTab(SIGNIFICANT) : undefined,
+        onClick: results.hasStats ? () => openTab(SIGNIFICANT) : undefined,
       },
       total,
     ];
@@ -80,26 +93,32 @@ function ResultsBody({ results, parameters }: { results: RunResults; parameters:
         onChange={setTab}
       />
     );
-    plot = (
-      <PhaseDiagram
-        genes={results.rows}
-        proDeath={proDeath}
-        antiDeath={antiDeath}
-        geneList={parameters?.gene_list}
-      />
-    );
+    plots = [
+      {
+        label: 'Phase Diagram',
+        plot: (
+          <PhaseDiagram
+            genes={results.rows}
+            proDeath={proDeath}
+            antiDeath={antiDeath}
+            geneList={parameters?.gene_list}
+          />
+        ),
+      },
+    ];
+    plotHeight = PLOT_HEIGHT;
   } else {
     const { proDeath, antiDeath } = topHits(results.rows);
     const regulators = results.rows.filter(
       (row) => !row.control && row.deathPredict.toLowerCase().includes('regulator'),
     );
     cards = [
-      { label: 'Top Hits (Pro-Death)', value: String(proDeath.length), onClick: () => setTab(PRO_DEATH) },
-      { label: 'Top Hits (Anti-Death)', value: String(antiDeath.length), onClick: () => setTab(ANTI_DEATH) },
+      { label: 'Top Hits (Pro-Death)', value: String(proDeath.length), onClick: () => openTab(PRO_DEATH) },
+      { label: 'Top Hits (Anti-Death)', value: String(antiDeath.length), onClick: () => openTab(ANTI_DEATH) },
       {
         label: 'Death-Rate Regulators',
         value: regulators.length.toLocaleString(),
-        onClick: () => setTab(REGULATORS),
+        onClick: () => openTab(REGULATORS),
       },
       total,
     ];
@@ -116,14 +135,19 @@ function ResultsBody({ results, parameters }: { results: RunResults; parameters:
         onChange={setTab}
       />
     );
-    plot = (
-      <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 3 }}>
-        <Typography sx={{ fontSize: 13, color: '#888', textAlign: 'center', maxWidth: 360 }}>
-          GM runs produce per-gene histograms rather than a phase diagram. Interactive histograms are
-          not built yet; the worker&apos;s histogram images are under Download Output Files.
-        </Typography>
-      </Box>
-    );
+    plots = [
+      {
+        label: 'Histograms',
+        plot: (
+          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+            <Typography sx={{ fontSize: 13, color: '#888', textAlign: 'center', maxWidth: 360 }}>
+              GM runs produce per-gene histograms rather than a phase diagram. Interactive histograms are
+              not built yet; the worker&apos;s histogram images are under Download Output Files.
+            </Typography>
+          </Box>
+        ),
+      },
+    ];
   }
 
   return (
@@ -135,19 +159,12 @@ function ResultsBody({ results, parameters }: { results: RunResults; parameters:
           {results.filename} for missing or non-positive rates.
         </Alert>
       )}
-      {/* On md+ this card takes whatever height is left and the panes size to it (100cqh) */}
-      <Paper sx={{ p: 1, flex: { md: '1 1 0px' }, minHeight: { md: 336 }, containerType: { md: 'size' } }}>
-        <TwoPaneLayout
-          direction={{ xs: 'column', md: 'row' }}
-          rowHeight="100cqh"
-          TableComponent={table}
-          plots={[
-            {
-              tabTitle: 'Visualization',
-              plotComponent: plot,
-            },
-          ]}
-        />
+      {/* The plots first and the table under them, each at full width. The page scrolls to fit them. */}
+      <Paper sx={{ p: 2, mb: 2, height: plotHeight }}>
+        <PlotTabs tabs={plots} />
+      </Paper>
+      <Paper ref={tableRef} sx={{ p: 2, height: TABLE_HEIGHT }}>
+        {table}
       </Paper>
     </>
   );
