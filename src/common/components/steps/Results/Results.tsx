@@ -15,7 +15,7 @@ import { RunResults, SIGNIFICANCE_FDR, topHits } from '@/common/results';
 import { RunParameters } from '@/types';
 import StatCards, { StatCard } from './StatCards';
 import TableTabs from './TableTabs';
-import VolcanoPlot from './VolcanoPlot';
+import PhaseDiagram from './PhaseDiagram';
 import OutputFilesDialog from './OutputFilesDialog';
 import { fullColumns, GM_COLUMNS } from './columns';
 
@@ -64,7 +64,7 @@ function ResultsBody({ results, parameters }: { results: RunResults; parameters:
       />
     );
     plot = (
-      <VolcanoPlot
+      <PhaseDiagram
         genes={results.rows}
         proDeath={proDeath}
         antiDeath={antiDeath}

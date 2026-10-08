@@ -40,7 +40,7 @@ interface Props {
 }
 
 // The fully parameterized phase diagram: log2 relative growth rate against log2 relative death rate.
-export default function VolcanoPlot({ genes, proDeath, antiDeath, geneList }: Props) {
+export default function PhaseDiagram({ genes, proDeath, antiDeath, geneList }: Props) {
   const pointData = useMemo(() => {
     const groups = new Map<string, GeneGroup['group']>();
     if (geneList) {

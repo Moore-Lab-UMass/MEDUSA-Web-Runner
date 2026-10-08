@@ -10,8 +10,7 @@ export default function GeneTable({ genes, columns }: { genes: GeneRow[]; column
       columns={columns}
       getRowId={(row) => row.gene}
       density="compact"
-      showToolbar={false}
-      pageSizeOptions={[5, 10, 25]}
+      label="Gene Table"
       initialState={{ pagination: { paginationModel: { pageSize: 5, page: 0 } } }}
     />
   );
