@@ -29,9 +29,22 @@ interface Props {
 
 const MODE_LABELS = { full: 'Fully parameterized', gm: 'GM' };
 
+// The gene table's tabs. Each stat card opens the tab that lists what it counts.
+const PRO_DEATH = 'Pro-Death';
+const ANTI_DEATH = 'Anti-Death';
+const SIGNIFICANT = 'Significant';
+const REGULATORS = 'Regulators';
+const ALL_GENES = 'All Genes';
+
 function ResultsBody({ results, parameters }: { results: RunResults; parameters: RunParameters | null }) {
+  const [tab, setTab] = useState(PRO_DEATH);
+
   // Control groups are not genes, so they stay out of the counts.
-  const total = { label: 'Total Genes', value: results.rows.filter((row) => !row.control).length.toLocaleString() };
+  const total = {
+    label: 'Total Genes',
+    value: results.rows.filter((row) => !row.control).length.toLocaleString(),
+    onClick: () => setTab(ALL_GENES),
+  };
 
   // The two modes share a layout but not their columns, their third stat, or a plot.
   let cards: StatCard[];
@@ -44,12 +57,13 @@ function ResultsBody({ results, parameters }: { results: RunResults; parameters:
       (row) => !row.control && row.deathFdr !== null && row.deathFdr < SIGNIFICANCE_FDR,
     );
     cards = [
-      { label: 'Top Hits (Pro-Death)', value: String(proDeath.length) },
-      { label: 'Top Hits (Anti-Death)', value: String(antiDeath.length) },
-      // Without stats the run has no FDR to count by.
+      { label: 'Top Hits (Pro-Death)', value: String(proDeath.length), onClick: () => setTab(PRO_DEATH) },
+      { label: 'Top Hits (Anti-Death)', value: String(antiDeath.length), onClick: () => setTab(ANTI_DEATH) },
+      // Without stats the run has no FDR to count by, and so no tab to open.
       {
         label: `Significant Genes (death FDR < ${SIGNIFICANCE_FDR})`,
         value: results.hasStats ? significant.length.toLocaleString() : '—',
+        onClick: results.hasStats ? () => setTab(SIGNIFICANT) : undefined,
       },
       total,
     ];
@@ -57,10 +71,13 @@ function ResultsBody({ results, parameters }: { results: RunResults; parameters:
       <TableTabs
         columns={fullColumns(results.hasStats)}
         tabs={[
-          { label: 'Pro-Death', genes: proDeath },
-          { label: 'Anti-Death', genes: antiDeath },
-          { label: 'All Genes', genes: results.rows },
+          { label: PRO_DEATH, genes: proDeath },
+          { label: ANTI_DEATH, genes: antiDeath },
+          ...(results.hasStats ? [{ label: SIGNIFICANT, genes: significant }] : []),
+          { label: ALL_GENES, genes: results.rows },
         ]}
+        value={tab}
+        onChange={setTab}
       />
     );
     plot = (
@@ -77,19 +94,26 @@ function ResultsBody({ results, parameters }: { results: RunResults; parameters:
       (row) => !row.control && row.deathPredict.toLowerCase().includes('regulator'),
     );
     cards = [
-      { label: 'Top Hits (Pro-Death)', value: String(proDeath.length) },
-      { label: 'Top Hits (Anti-Death)', value: String(antiDeath.length) },
-      { label: 'Death-Rate Regulators', value: regulators.length.toLocaleString() },
+      { label: 'Top Hits (Pro-Death)', value: String(proDeath.length), onClick: () => setTab(PRO_DEATH) },
+      { label: 'Top Hits (Anti-Death)', value: String(antiDeath.length), onClick: () => setTab(ANTI_DEATH) },
+      {
+        label: 'Death-Rate Regulators',
+        value: regulators.length.toLocaleString(),
+        onClick: () => setTab(REGULATORS),
+      },
       total,
     ];
     table = (
       <TableTabs
         columns={GM_COLUMNS}
         tabs={[
-          { label: 'Pro-Death', genes: proDeath },
-          { label: 'Anti-Death', genes: antiDeath },
-          { label: 'All Genes', genes: results.rows },
+          { label: PRO_DEATH, genes: proDeath },
+          { label: ANTI_DEATH, genes: antiDeath },
+          { label: REGULATORS, genes: regulators },
+          { label: ALL_GENES, genes: results.rows },
         ]}
+        value={tab}
+        onChange={setTab}
       />
     );
     plot = (
