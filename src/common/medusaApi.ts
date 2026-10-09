@@ -1,3 +1,4 @@
+import { noteApiRequest } from '@/common/runTimings';
 import { CreatedRun, LogChunk, RunOutput, RunParameters, RunState, RunStatus, UploadTarget } from '@/types';
 
 // Same-origin proxy routes (src/app/api/medusa) that attach the API key server-side.
@@ -22,7 +23,10 @@ export function isTerminal(status: RunStatus) {
 }
 
 async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const requestStart = performance.now();
   const response = await fetch(BASE_URL + path, { ...init, cache: 'no-store' });
+  // TEMP
+  noteApiRequest(init.method ?? 'GET', path, performance.now() - requestStart, response.headers.get('Server-Timing'));
 
   if (!response.ok) {
     // A non-JSON error body is reported through the status alone.

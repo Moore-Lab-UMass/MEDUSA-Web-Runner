@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { noteRunStatus } from '@/common/runTimings';
 import { getLogs, getParameters, getRun, isTerminal, LOG_PAGE_SIZE, MedusaApiError } from '@/common/medusaApi';
 import { LogChunk, RunParameters, RunState, RunStatus } from '@/types';
 
@@ -77,6 +78,8 @@ export function useRun(runId: string) {
 
         const state = await getRun(runId, controller.signal);
         if (cancelled) return null;
+        // TEMP
+        noteRunStatus(state, POLL_INTERVAL_MS);
         setRun(state);
         setInitialStatus((prev) => prev ?? state.status);
 

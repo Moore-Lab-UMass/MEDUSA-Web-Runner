@@ -7,6 +7,7 @@ import SetParameters from './steps/SetParameters/SetParameters';
 import { validateCsvFile } from './steps/UploadFiles/validateCsv';
 import { createRun, getRun, startRun, uploadFile } from '@/common/medusaApi';
 import { buildParameters } from '@/common/parameters';
+import { addRunTiming, beginRunTimings } from '@/common/runTimings';
 import { FormErrors, FormValues, SubmitState, UploadedFile } from '@/types';
 
 const DEFAULT_FORM: FormValues = {
@@ -85,6 +86,14 @@ export default function MedusaApp() {
       return;
     }
 
+    // TEMP: see src/common/runTimings.ts.
+    beginRunTimings();
+    const timed = async (label: string, work: Promise<unknown>) => {
+      const start = performance.now();
+      await work;
+      addRunTiming(label, performance.now() - start);
+    };
+
     let runId: string | undefined;
     try {
       setSubmit({ phase: 'creating' });
@@ -99,10 +108,19 @@ export default function MedusaApp() {
         setSubmit({ phase: 'uploading', progress: Math.round(((loaded.file1 + loaded.file2) / total) * 100) });
       };
       setSubmit({ phase: 'uploading', progress: 0 });
-      await Promise.all([
-        uploadFile(created.uploads.file1, trtFile.file, report('file1', trtFile.file.size)),
-        uploadFile(created.uploads.file2, untFile.file, report('file2', untFile.file.size)),
-      ]);
+      await timed(
+        'Both uploads, in parallel, wall clock',
+        Promise.all([
+          timed(
+            `Upload file1 (${trtFile.sizeMB})`,
+            uploadFile(created.uploads.file1, trtFile.file, report('file1', trtFile.file.size)),
+          ),
+          timed(
+            `Upload file2 (${untFile.sizeMB})`,
+            uploadFile(created.uploads.file2, untFile.file, report('file2', untFile.file.size)),
+          ),
+        ]),
+      );
 
       setSubmit({ phase: 'starting' });
       await startRun(runId);

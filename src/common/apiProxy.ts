@@ -25,6 +25,9 @@ export async function proxyRequest({ url, token, method, request }: ProxyOptions
     }
   }
 
+  // TEMP: how long the MEDUSA API itself took, for src/common/runTimings.ts.
+  const upstreamStart = performance.now();
+
   let response: Response;
   try {
     response = await fetch(url, { method, headers, body, cache: 'no-store' });
@@ -45,6 +48,11 @@ export async function proxyRequest({ url, token, method, request }: ProxyOptions
 
   return new NextResponse(data, {
     status: response.status,
-    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store',
+      // TEMP
+      'Server-Timing': `upstream;dur=${(performance.now() - upstreamStart).toFixed(1)}`,
+    },
   });
 }
