@@ -10,11 +10,12 @@ import DownloadIcon from '@mui/icons-material/Download';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import ArrowBackIcon from '@mui/icons-material/KeyboardArrowLeft';
 import { RunResultsState } from '@/common/hooks/useRunResults';
+import { PhaseSurface } from '@/common/phaseSurface';
 import { RunResults, SIGNIFICANCE_FDR, topHits } from '@/common/results';
 import { RunParameters } from '@/types';
 import StatCards, { StatCard } from './StatCards';
 import TableTabs from './TableTabs';
-import PhaseDiagram from './PhaseDiagram';
+import PhaseDiagram from './Plots/PhaseDiagram/PhaseDiagram';
 import PlotTabs, { PlotTab } from './PlotTabs';
 import OutputFilesDialog from './OutputFilesDialog';
 import { fullColumns, GM_COLUMNS } from './columns';
@@ -40,7 +41,13 @@ const SIGNIFICANT = 'Significant';
 const REGULATORS = 'Regulators';
 const ALL_GENES = 'All Genes';
 
-function ResultsBody({ results, parameters }: { results: RunResults; parameters: RunParameters | null }) {
+interface BodyProps {
+  results: RunResults;
+  parameters: RunParameters | null;
+  surface: PhaseSurface | 'loading' | null;
+}
+
+function ResultsBody({ results, parameters, surface }: BodyProps) {
   const [tab, setTab] = useState(PRO_DEATH);
   const tableRef = useRef<HTMLDivElement>(null);
 
@@ -102,6 +109,7 @@ function ResultsBody({ results, parameters }: { results: RunResults; parameters:
             proDeath={proDeath}
             antiDeath={antiDeath}
             geneList={parameters?.gene_list}
+            surface={surface}
           />
         ),
       },
@@ -232,7 +240,7 @@ export default function Results({ runId, parameters, results, onBack, onNewAnaly
           </Alert>
         )}
         {results.status === 'ready' && results.results && (
-          <ResultsBody results={results.results} parameters={parameters} />
+          <ResultsBody results={results.results} parameters={parameters} surface={results.surface} />
         )}
       </Paper>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2}}>

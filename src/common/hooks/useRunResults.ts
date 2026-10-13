@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { getOutputUrls } from '@/common/medusaApi';
 import { deriveMode } from '@/common/parameters';
+import { PhaseSurface, readSurface, SIMTABLE } from '@/common/phaseSurface';
 import { parseResults, RunResults, summaryOutput } from '@/common/results';
 import { RunMode, RunParameters } from '@/types';
 
@@ -9,11 +10,14 @@ export type RunResultsState =
   | { status: 'loading' }
   | { status: 'error'; message: string }
   // results is null when the run wrote no summary CSV (GM mode without stats).
-  | { status: 'ready'; mode: RunMode; results: RunResults | null };
+  // surface is the phase diagram's background, which arrives after the results. It is null
+  // when the run wrote no simtable.csv, or the file could not be read.
+  | { status: 'ready'; mode: RunMode; results: RunResults | null; surface: PhaseSurface | 'loading' | null };
 
 /**
- * Loads a succeeded run's summary CSV once, and keeps the parsed rows for as long as the
- * consumer stays mounted. Signed URLs are used immediately and never stored.
+ * Loads a succeeded run's summary CSV once, then its simulation surface if it has one, and keeps
+ * what was parsed for as long as the consumer stays mounted. Signed URLs are used immediately
+ * and never stored.
  *
  * Does nothing until `parameters` has loaded and the run has succeeded.
  */
@@ -49,7 +53,18 @@ export function useRunResults(runId: string, parameters: RunParameters | null, s
         }
 
         if (cancelled) return;
-        setState({ status: 'ready', mode, results });
+        // Only a fully parameterized run's phase diagram draws the surface.
+        const simtable = results?.mode === 'full' ? outputs.find(({ filename }) => filename === SIMTABLE) : undefined;
+        setState({ status: 'ready', mode, results, surface: simtable ? 'loading' : null });
+        if (!simtable) return;
+
+        // The results are already showing, and the diagram reads without its background, so a
+        // surface that fails to load is left out rather than reported as the results failing.
+        const surface = await fetch(simtable.url, { signal })
+          .then((response) => (response.ok ? readSurface(response) : null))
+          .catch(() => null);
+        if (cancelled) return;
+        setState({ status: 'ready', mode, results, surface });
       } catch (caught) {
         if (cancelled) return;
         setState({ status: 'error', message: caught instanceof Error ? caught.message : 'Could not load results.' });
