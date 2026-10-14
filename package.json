@@ -14,7 +14,6 @@
     "@emotion/styled": "^11.14.1",
     "@melloware/react-logviewer": "^6.5.5",
     "@mui/icons-material": "^7.1.1",
-    "@mui/lab": "^7.0.0",
     "@mui/material": "^7.1.1",
     "@mui/material-nextjs": "^7.3.10",
     "@mui/x-data-grid-premium": "^8.18.0",

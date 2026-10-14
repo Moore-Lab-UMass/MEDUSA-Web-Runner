@@ -913,37 +913,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/lab@npm:^7.0.0":
-  version: 7.0.0
-  resolution: "@mui/lab@npm:7.0.0"
-  dependencies:
-    "@babel/runtime": "npm:^7.28.4"
-    "@mui/system": "npm:^7.3.3"
-    "@mui/types": "npm:^7.4.7"
-    "@mui/utils": "npm:^7.3.3"
-    clsx: "npm:^2.1.1"
-    prop-types: "npm:^15.8.1"
-  peerDependencies:
-    "@emotion/react": ^11.5.0
-    "@emotion/styled": ^11.3.0
-    "@mui/material": ^7.3.3
-    "@mui/material-pigment-css": ^7.3.3
-    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
-    react: ^17.0.0 || ^18.0.0 || ^19.0.0
-    react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
-  peerDependenciesMeta:
-    "@emotion/react":
-      optional: true
-    "@emotion/styled":
-      optional: true
-    "@mui/material-pigment-css":
-      optional: true
-    "@types/react":
-      optional: true
-  checksum: 10c0/0fb296321844e6cca7ab11330f0c7a7ce38d4d6554c0d27b943ba9523bb50c155e014a15242def70c0ab1fb09b9707dc0d1716fa577cba51a30d7c63ea6f32af
-  languageName: node
-  linkType: hard
-
 "@mui/material-nextjs@npm:^7.3.10":
   version: 7.3.10
   resolution: "@mui/material-nextjs@npm:7.3.10"
@@ -1043,7 +1012,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/system@npm:^7.3.11, @mui/system@npm:^7.3.3":
+"@mui/system@npm:^7.3.11":
   version: 7.3.11
   resolution: "@mui/system@npm:7.3.11"
   dependencies:
@@ -1071,7 +1040,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/types@npm:^7.4.12, @mui/types@npm:^7.4.7":
+"@mui/types@npm:^7.4.12":
   version: 7.4.12
   resolution: "@mui/types@npm:7.4.12"
   dependencies:
@@ -1085,7 +1054,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/utils@npm:^7.3.11, @mui/utils@npm:^7.3.3, @mui/utils@npm:^7.3.5":
+"@mui/utils@npm:^7.3.11, @mui/utils@npm:^7.3.5":
   version: 7.3.11
   resolution: "@mui/utils@npm:7.3.11"
   dependencies:
@@ -6142,7 +6111,6 @@ __metadata:
     "@emotion/styled": "npm:^11.14.1"
     "@melloware/react-logviewer": "npm:^6.5.5"
     "@mui/icons-material": "npm:^7.1.1"
-    "@mui/lab": "npm:^7.0.0"
     "@mui/material": "npm:^7.1.1"
     "@mui/material-nextjs": "npm:^7.3.10"
     "@mui/x-data-grid-premium": "npm:^8.18.0"
