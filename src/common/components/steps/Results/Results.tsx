@@ -1,5 +1,5 @@
 'use client';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -9,14 +9,13 @@ import Paper from '@mui/material/Paper';
 import DownloadIcon from '@mui/icons-material/Download';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import ArrowBackIcon from '@mui/icons-material/KeyboardArrowLeft';
+import { TwoPaneLayout, TwoPanePlotConfig } from '@weng-lab/ui-components';
 import { RunResultsState } from '@/common/hooks/useRunResults';
 import { PhaseSurface } from '@/common/phaseSurface';
-import { RunResults, SIGNIFICANCE_FDR, topHits } from '@/common/results';
+import { RunResults, SIGNIFICANCE_FDR, TOP_HITS, topHits } from '@/common/results';
 import { RunParameters } from '@/types';
-import StatCards, { StatCard } from './StatCards';
-import TableTabs from './TableTabs';
+import TableTabs, { GeneTab } from './TableTabs';
 import PhaseDiagram from './Plots/PhaseDiagram/PhaseDiagram';
-import PlotTabs, { PlotTab } from './PlotTabs';
 import OutputFilesDialog from './OutputFilesDialog';
 import { fullColumns, GM_COLUMNS } from './columns';
 
@@ -32,16 +31,21 @@ interface Props {
 
 const MODE_LABELS = { full: 'Fully parameterized', gm: 'GM' };
 
-// The plot card, tab bar included. The table card fits ten rows a page (see GeneTable).
-const PLOT_HEIGHT = 650;
-const TABLE_HEIGHT = 600;
+// Each pane's height, header included, side by side or stacked. The table pane fits ten rows a
+// page (see GeneTable).
+const PANE_HEIGHT = '650px';
 
-// The gene table's tabs. Each stat card opens the tab that lists what it counts.
-const PRO_DEATH = 'Pro-Death';
-const ANTI_DEATH = 'Anti-Death';
-const SIGNIFICANT = 'Significant';
-const REGULATORS = 'Regulators';
-const ALL_GENES = 'All Genes';
+// The top hits' tabs, less what they list, shared by both modes.
+const PRO_DEATH = {
+  label: 'Pro-Death',
+  title: `Top ${TOP_HITS} Pro-Death Genes`,
+  description: `Top ${TOP_HITS} pro-death genes`,
+};
+const ANTI_DEATH = {
+  label: 'Anti-Death',
+  title: `Top ${TOP_HITS} Anti-Death Genes`,
+  description: `Top ${TOP_HITS} anti-death genes`,
+};
 
 interface BodyProps {
   results: RunResults;
@@ -50,62 +54,48 @@ interface BodyProps {
 }
 
 function ResultsBody({ results, parameters, surface }: BodyProps) {
-  const [tab, setTab] = useState(PRO_DEATH);
-  const tableRef = useRef<HTMLDivElement>(null);
-
-  // The table sits below the plot, so a card that switches its tab also brings it into view.
-  const openTab = (label: string) => {
-    setTab(label);
-    tableRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  };
-
-  // Control groups are not genes, so they stay out of the counts.
-  const total = {
+  // Control groups are not genes, so they stay out of the count, though the table still lists them.
+  const total: GeneTab = {
     label: 'Total Genes',
-    value: results.rows.filter((row) => !row.control).length.toLocaleString(),
-    onClick: () => openTab(ALL_GENES),
+    title: 'All Genes',
+    description: 'Every gene in the run, not counting controls. The table lists the controls too.',
+    count: results.rows.filter((row) => !row.control).length.toLocaleString(),
+    genes: results.rows,
   };
 
-  // The two modes share a layout but not their columns, their third stat, or their plots.
-  let cards: StatCard[];
+  // The two modes share a layout but not their columns, their third tab, or their plots.
   let table: React.ReactNode;
-  let plots: PlotTab[];
-  // Undefined leaves the plot card as tall as its content.
-  let plotHeight: number | undefined;
+  let plots: TwoPanePlotConfig[];
 
   if (results.mode === 'full') {
     const { proDeath, antiDeath } = topHits(results.rows);
     const significant = results.rows.filter(
       (row) => !row.control && row.deathFdr !== null && row.deathFdr < SIGNIFICANCE_FDR,
     );
-    cards = [
-      { label: 'Top Hits (Pro-Death)', value: String(proDeath.length), onClick: () => openTab(PRO_DEATH) },
-      { label: 'Top Hits (Anti-Death)', value: String(antiDeath.length), onClick: () => openTab(ANTI_DEATH) },
-      // Without stats the run has no FDR to count by, and so no tab to open.
-      {
-        label: `Significant Genes (death FDR < ${SIGNIFICANCE_FDR})`,
-        value: results.hasStats ? significant.length.toLocaleString() : '—',
-        onClick: results.hasStats ? () => openTab(SIGNIFICANT) : undefined,
-      },
-      total,
-    ];
     table = (
       <TableTabs
         columns={fullColumns(results.hasStats)}
         tabs={[
-          { label: PRO_DEATH, genes: proDeath },
-          { label: ANTI_DEATH, genes: antiDeath },
-          ...(results.hasStats ? [{ label: SIGNIFICANT, genes: significant }] : []),
-          { label: ALL_GENES, genes: results.rows },
+          { ...PRO_DEATH, count: String(proDeath.length), genes: proDeath },
+          { ...ANTI_DEATH, count: String(antiDeath.length), genes: antiDeath },
+          // Without stats the run has no FDR to count by, and so nothing to list.
+          {
+            label: 'Significant',
+            title: `Significant Genes (death FDR < ${SIGNIFICANCE_FDR})`,
+            description: results.hasStats
+              ? `Genes with a death FDR below ${SIGNIFICANCE_FDR}`
+              : `Genes with a death FDR below ${SIGNIFICANCE_FDR}. This run has no stats to take an FDR from.`,
+            count: results.hasStats ? significant.length.toLocaleString() : '—',
+            genes: results.hasStats ? significant : undefined,
+          },
+          total,
         ]}
-        value={tab}
-        onChange={setTab}
       />
     );
     plots = [
       {
-        label: 'Phase Diagram',
-        plot: (
+        tabTitle: 'Phase Diagram',
+        plotComponent: (
           <PhaseDiagram
             genes={results.rows}
             proDeath={proDeath}
@@ -116,39 +106,32 @@ function ResultsBody({ results, parameters, surface }: BodyProps) {
         ),
       },
     ];
-    plotHeight = PLOT_HEIGHT;
   } else {
     const { proDeath, antiDeath } = topHits(results.rows);
     const regulators = results.rows.filter(
       (row) => !row.control && row.deathPredict.toLowerCase().includes('regulator'),
     );
-    cards = [
-      { label: 'Top Hits (Pro-Death)', value: String(proDeath.length), onClick: () => openTab(PRO_DEATH) },
-      { label: 'Top Hits (Anti-Death)', value: String(antiDeath.length), onClick: () => openTab(ANTI_DEATH) },
-      {
-        label: 'Death-Rate Regulators',
-        value: regulators.length.toLocaleString(),
-        onClick: () => openTab(REGULATORS),
-      },
-      total,
-    ];
     table = (
       <TableTabs
         columns={GM_COLUMNS}
         tabs={[
-          { label: PRO_DEATH, genes: proDeath },
-          { label: ANTI_DEATH, genes: antiDeath },
-          { label: REGULATORS, genes: regulators },
-          { label: ALL_GENES, genes: results.rows },
+          { ...PRO_DEATH, count: String(proDeath.length), genes: proDeath },
+          { ...ANTI_DEATH, count: String(antiDeath.length), genes: antiDeath },
+          {
+            label: 'Regulators',
+            title: 'Death-Rate Regulators',
+            description: 'Genes predicted to regulate the death rate',
+            count: regulators.length.toLocaleString(),
+            genes: regulators,
+          },
+          total,
         ]}
-        value={tab}
-        onChange={setTab}
       />
     );
     plots = [
       {
-        label: 'Histograms',
-        plot: (
+        tabTitle: 'Histograms',
+        plotComponent: (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
             <Typography sx={{ fontSize: 13, color: '#888', textAlign: 'center', maxWidth: 360 }}>
               GM runs produce per-gene histograms rather than a phase diagram. Interactive histograms are
@@ -162,19 +145,24 @@ function ResultsBody({ results, parameters, surface }: BodyProps) {
 
   return (
     <>
-      <StatCards cards={cards} />
       {results.excluded > 0 && (
         <Alert severity="info" sx={{ mb: 2 }}>
           {results.excluded.toLocaleString()} {results.excluded === 1 ? 'row was' : 'rows were'} left out of{' '}
           {results.filename} for missing or non-positive rates.
         </Alert>
       )}
-      {/* The plots first and the table under them, each at full width. The page scrolls to fit them. */}
-      <Paper sx={{ p: 2, mb: 2, height: plotHeight }}>
-        <PlotTabs tabs={plots} />
-      </Paper>
-      <Paper ref={tableRef} sx={{ p: 2, height: TABLE_HEIGHT }}>
-        {table}
+      {/* The table and the plots side by side, with a draggable divider between them. They stack,
+          table first, where the row is too narrow to give the phase diagram room. */}
+      <Paper sx={{ p: 2 }}>
+        <TwoPaneLayout
+          TableComponent={table}
+          plots={plots}
+          direction={{ xs: 'column', lg: 'row' }}
+          rowHeight={PANE_HEIGHT}
+          columnHeight={PANE_HEIGHT}
+          // The plot tabs have no icons, so their labels have to stay up when the panes stack.
+          showTabLabels
+        />
       </Paper>
     </>
   );
@@ -206,8 +194,9 @@ export default function Results({ runId, parameters, results, surface, onBack, o
             mb: 2,
           }}
         >
-          <Box sx={{ minWidth: 0 }}>
-            <Typography variant="h5" sx={{ mb: 0.5 }}>Results overview</Typography>
+          {/* Title and run on one line, the run wrapping under the title where it doesn't fit. */}
+          <Box sx={{ minWidth: 0, display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', columnGap: 1.5 }}>
+            <Typography variant="h5">Results overview</Typography>
             <Typography sx={{ fontSize: 13, color: '#888', overflowWrap: 'anywhere' }}>
               Run {runId}
               {results.status === 'ready' && ` · ${MODE_LABELS[results.mode]} mode`}

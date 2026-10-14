@@ -30,7 +30,7 @@ export default function RunPage({ runId }: { runId: string }) {
 
   if (error) {
     return (
-      <StepLayout step={3}>
+      <StepLayout step={3} links={{ 1: handleNewAnalysis }}>
         <Paper variant="outlined" sx={{ p: { xs: 2.5, sm: 5 }, bgcolor: '#f5f6f7', borderColor: '#e5e7ea' }}>
           <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>Run not found</Typography>
           <Typography sx={{ fontSize: 13, color: '#666', mb: 3 }}>
@@ -46,8 +46,16 @@ export default function RunPage({ runId }: { runId: string }) {
     );
   }
 
+  // The stepper switches between the log and the results, the latter once there are any. Upload
+  // Files starts over, as there is no going back into the run this page is following.
+  const links = {
+    1: handleNewAnalysis,
+    3: () => setView('run'),
+    4: succeeded ? () => setView('results') : undefined,
+  };
+
   return (
-    <StepLayout step={showResults ? 4 : 3}>
+    <StepLayout step={showResults ? 4 : 3} links={links}>
       {showResults ? (
         <Results
           runId={runId}

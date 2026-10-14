@@ -144,8 +144,16 @@ export default function MedusaApp() {
     }
   };
 
+  // The stepper follows the Back and Next buttons: no going back mid-submit, no going on without
+  // two valid files. Running and results belong to a run, which this page has yet to make.
+  const filesReady = !!trtFile && !!untFile && !trtFile.error && !untFile.error;
+  const links = {
+    1: submit.phase === 'idle' ? () => setStep(1) : undefined,
+    2: filesReady ? () => setStep(2) : undefined,
+  };
+
   return (
-    <StepLayout step={step}>
+    <StepLayout step={step} links={links}>
       {step === 1 && (
         <UploadFiles
           trtFile={trtFile}
