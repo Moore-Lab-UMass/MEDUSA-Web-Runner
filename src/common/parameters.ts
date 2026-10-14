@@ -101,9 +101,6 @@ export function buildParameters(form: FormValues): { parameters: RunParameters; 
     stats: form.stats,
     plot: form.plot,
   };
-  // A fully parameterized run writes simtable.csv, the phase diagram's background, only along
-  // with its intermediate files.
-  if (deriveMode(parameters) === 'full') parameters.out_intermediate = true;
 
   // JSON.stringify drops undefined, but the object is also used directly, so strip them here.
   for (const key of Object.keys(parameters) as (keyof RunParameters)[]) {

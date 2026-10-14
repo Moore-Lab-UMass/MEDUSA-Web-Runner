@@ -22,21 +22,19 @@ interface Props {
   antiDeath: FullGeneRow[];
   // The run's gene_list parameter. When set it replaces the top hits as what gets highlighted.
   geneList?: string[];
-  // The run's simulation, drawn behind the genes. Null when the run has none.
-  surface: PhaseSurface | 'loading' | null;
+  // The run's simulation, drawn behind the genes. Null when it has no grid to draw.
+  surface: PhaseSurface | null;
 }
 
 // The fully parameterized phase diagram: log2 relative growth rate against log2 relative death rate.
 export default function PhaseDiagram({ genes, proDeath, antiDeath, geneList, surface }: Props) {
-  const grid = surface === 'loading' ? null : surface;
-
   const pointData = useMemo(
-    () => genePoints(genes, proDeath, antiDeath, geneList, grid),
-    [genes, proDeath, antiDeath, geneList, grid],
+    () => genePoints(genes, proDeath, antiDeath, geneList, surface),
+    [genes, proDeath, antiDeath, geneList, surface],
   );
   // The domains the plot would settle on itself, taken here so the colors can be fitted to them.
   const domains = useMemo(() => getSharedDomains(pointData), [pointData]);
-  const colorRange = useMemo(() => (grid ? surfaceColorRange(grid, domains) : null), [grid, domains]);
+  const colorRange = useMemo(() => (surface ? surfaceColorRange(surface, domains) : null), [surface, domains]);
   const l2fcs = useMemo(() => sortedL2fcs(pointData), [pointData]);
 
   // Sweeping the colorbar spotlights the genes whose L2FC lies in the stretch under the cursor.
@@ -54,13 +52,10 @@ export default function PhaseDiagram({ genes, proDeath, antiDeath, geneList, sur
       <PlotFrame margin={PLOT_MARGIN}>
         {({ width, height }) => (
           <ScatterPlot
-            // ScatterPlot stops the wheel from scrolling the page only if its plot is drawn when
-            // it mounts, which it is not while loading. The key mounts it again once loaded.
-            key={surface === 'loading' ? 'loading' : 'loaded'}
             width={width}
             height={height}
             pointData={pointData}
-            loading={surface === 'loading'}
+            loading={false}
             controlsPosition="right"
             miniMap={MINIMAP}
             xDomain={domains.xDomain}
@@ -77,9 +72,9 @@ export default function PhaseDiagram({ genes, proDeath, antiDeath, geneList, sur
             animationGroupSize={50}
             tooltipBody={(point) => <GeneTooltip point={point} />}
             backgroundField={
-              grid && colorRange
+              surface && colorRange
                 ? {
-                    ...grid,
+                    ...surface,
                     domain: colorRange,
                     colorScale: SURFACE_COLORS,
                     legend: (slot) => (
@@ -98,7 +93,7 @@ export default function PhaseDiagram({ genes, proDeath, antiDeath, geneList, sur
           />
         )}
       </PlotFrame>
-      <PointLegend surfaceLoading={surface === 'loading'} />
+      <PointLegend />
     </Box>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 
 type Size = { width: number; height: number };
 
@@ -31,6 +32,13 @@ export default function PlotFrame({ margin, children }: Props) {
 
   return (
     <Box ref={measureRef} sx={{ flex: 1, minHeight: 100, position: 'relative' }}>
+      {size === null && (
+        // Until the first measurement lands there is no size to draw the plot at.
+        <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {/* Shown for a moment at most, too briefly for the default arc to grow out of a dot */}
+          <CircularProgress disableShrink />
+        </Box>
+      )}
       {plottable && (
         // Out of flow, so the plot's fixed pixel size can never stop this box from shrinking.
         <Box sx={{ position: 'absolute', top: 0, left: 0 }}>{children(size)}</Box>

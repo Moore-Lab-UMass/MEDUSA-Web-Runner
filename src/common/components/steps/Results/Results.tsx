@@ -24,6 +24,8 @@ interface Props {
   runId: string;
   parameters: RunParameters | null;
   results: RunResultsState;
+  // The simulation behind a fully parameterized run. Null for a GM run.
+  surface: PhaseSurface | null;
   onBack: () => void;
   onNewAnalysis: () => void;
 }
@@ -44,7 +46,7 @@ const ALL_GENES = 'All Genes';
 interface BodyProps {
   results: RunResults;
   parameters: RunParameters | null;
-  surface: PhaseSurface | 'loading' | null;
+  surface: PhaseSurface | null;
 }
 
 function ResultsBody({ results, parameters, surface }: BodyProps) {
@@ -178,7 +180,7 @@ function ResultsBody({ results, parameters, surface }: BodyProps) {
   );
 }
 
-export default function Results({ runId, parameters, results, onBack, onNewAnalysis }: Props) {
+export default function Results({ runId, parameters, results, surface, onBack, onNewAnalysis }: Props) {
   const [filesOpen, setFilesOpen] = useState(false);
 
   return (
@@ -240,7 +242,7 @@ export default function Results({ runId, parameters, results, onBack, onNewAnaly
           </Alert>
         )}
         {results.status === 'ready' && results.results && (
-          <ResultsBody results={results.results} parameters={parameters} surface={results.surface} />
+          <ResultsBody results={results.results} parameters={parameters} surface={surface} />
         )}
       </Paper>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2}}>

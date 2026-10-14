@@ -2,8 +2,8 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { POINT_KINDS } from './genePoints';
 
-// The row under the plot: what each color of point is, and a note while the surface is on its way.
-export default function PointLegend({ surfaceLoading }: { surfaceLoading: boolean }) {
+// The row under the plot: what each color of point is.
+export default function PointLegend() {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mt: 1.5, flexWrap: 'wrap' }}>
       {POINT_KINDS.map(({ label, color }) => (
@@ -12,9 +12,6 @@ export default function PointLegend({ surfaceLoading }: { surfaceLoading: boolea
           <Typography sx={{ fontSize: 12, color: '#666' }}>{label}</Typography>
         </Box>
       ))}
-      {surfaceLoading && (
-        <Typography sx={{ fontSize: 12, color: '#666', ml: 'auto' }}>Loading simulation background…</Typography>
-      )}
     </Box>
   );
 }

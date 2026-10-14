@@ -1,57 +1,75 @@
-import { BackgroundField, getFieldGrid } from '@weng-lab/visualization';
+import { BackgroundField } from '@weng-lab/visualization';
+import { RunParameters } from '@/types';
 
-// The simulation behind a fully parameterized run. Only written with out_intermediate.
-export const SIMTABLE = 'simtable.csv';
-
-// The model's L2FC_TRvUT over the phase diagram's plane: x is log2(NPG) and y is log2(DR_drug),
-// the relative growth and death rates the genes are placed by.
+// The model's L2FC_TRvUT over the phase diagram's plane: x is log2 of the relative growth rate
+// and y log2 of the relative death rate, which the genes are placed by.
 export type PhaseSurface = Pick<BackgroundField, 'x' | 'y' | 'values'>;
 
-// pandas writes a missing value as an empty cell, which Number would read as zero.
-const cell = (text: string | undefined) => (text ? Number(text) : NaN);
+// What MEDUSA uses when num_iter was left out of the run.
+const DEFAULT_NUM_ITER = 1000;
+// The cells each arm of the simulation starts from. Arbitrary, but a treated arm is never let
+// fall below one cell, so it does not cancel out.
+const START_CELLS = 500;
+
+// numpy's linspace: `count` values evenly spaced from `from` to `to`, both included.
+function linspace(from: number, to: number, count: number) {
+  const step = count > 1 ? (to - from) / (count - 1) : 0;
+  return Array.from({ length: count }, (_, k) => (k > 0 && k === count - 1 ? to : from + k * step));
+}
+
+// Relative rates as the grid's lines: ascending, each once. One without a log2 has no place on
+// the plot.
+function gridLines(rates: number[]) {
+  return Float64Array.from(new Set(rates.filter((rate) => rate > 0))).sort();
+}
 
 /**
- * Reads simtable.csv into the phase diagram's surface. The file has num_iter squared rows, a
- * million by default, so it is read a chunk at a time and never held whole as text or as rows.
- * Its cells are bare numbers, so splitting on commas is all the parsing it needs.
+ * The simulation behind a fully parameterized run, as MEDUSA itself runs it (run_medusa in
+ * medusa/run_sim.py, MEDUSA-backend) and would write to simtable.csv: a knockout's L2FC_TRvUT at
+ * every pairing of num_iter relative growth rates with num_iter relative death rates. It depends
+ * on nothing but the run's parameters, so it is worked out here rather than downloaded.
+ *
+ * This repeats MEDUSA's arithmetic, and has to be changed along with it.
+ *
+ * Null for a GM run, which has no single simulation, and for one whose rates give no grid to draw.
  */
-export async function readSurface(response: Response): Promise<PhaseSurface> {
-  if (!response.body) throw new Error(`${SIMTABLE} has no content.`);
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
+export function simulateSurface(parameters: RunParameters): PhaseSurface | null {
+  const { NPG, T_end_unt, T_end_tr, T_start = 0, GRdrug1, Do, GRdrug2, DRdrug } = parameters;
+  if (GRdrug1 === undefined || Do === undefined || GRdrug2 === undefined || DRdrug === undefined) return null;
+  const iterations = parameters.num_iter ?? DEFAULT_NUM_ITER;
 
-  const x: number[] = [];
-  const y: number[] = [];
-  const values: number[] = [];
-  let columns: { growth: number; death: number; l2fc: number } | null = null;
+  // Growth is simulated from near none to half again as fast as wild type, and at wild type itself.
+  const growths = gridLines(NPG === 0 ? [1] : [...linspace(0.001, 1.5, iterations - 1), 1]);
 
-  const readLine = (line: string) => {
-    if (!line) return;
-    const cells = line.split(',');
-    if (!columns) {
-      const header = cells.map((name) => name.trim());
-      columns = { growth: header.indexOf('NPG'), death: header.indexOf('DR_drug'), l2fc: header.indexOf('L2FC_TRvUT') };
-      if (Object.values(columns).includes(-1)) throw new Error(`${SIMTABLE} is missing a column.`);
-      return;
+  // Death is simulated evenly up to wild type's rate, and evenly again from there to the rate
+  // that kills every cell after the onset of death. An even num_iter gives the first stretch
+  // the one more value.
+  const treatedSpan = T_end_tr - Do;
+  const lethal = treatedSpan * DRdrug === 0 ? 1 : 1 / (treatedSpan * DRdrug);
+  const upper = Math.ceil(iterations / 2);
+  const lower = iterations % 2 === 0 ? upper + 1 : upper;
+  const deaths = gridLines(DRdrug === 0 ? [1] : [...linspace(0.001, 1, lower), ...linspace(1, lethal, upper)]);
+  if (growths.length < 2 || deaths.length < 2) return null;
+
+  // Live cells when each arm is taken down, for cells growing `growth` times as fast as wild type
+  // and dying `death` times as fast. The treated arm grows at one rate until the onset of death,
+  // and at another while dying after it.
+  const untreated = (growth: number) => START_CELLS * 2 ** ((T_end_unt - T_start) * NPG * growth);
+  const treatedBeforeDeath = (growth: number) =>
+    START_CELLS * 2 ** ((Do - T_start) * GRdrug1 * growth) * 2 ** (treatedSpan * GRdrug2 * growth);
+  const treated = (beforeDeath: number, death: number) =>
+    Math.max(beforeDeath - beforeDeath * (DRdrug * treatedSpan * death), 1);
+
+  const wildType = treated(treatedBeforeDeath(1), 1) / untreated(1);
+  const values = new Float32Array(growths.length * deaths.length);
+  for (let i = 0; i < growths.length; i++) {
+    const beforeDeath = treatedBeforeDeath(growths[i]);
+    const untreatedCells = untreated(growths[i]);
+    for (let j = 0; j < deaths.length; j++) {
+      values[j * growths.length + i] = Math.log2(treated(beforeDeath, deaths[j]) / untreatedCells / wildType);
     }
-    // A rate without a log2 comes out non-finite, and getFieldGrid drops the point.
-    x.push(Math.log2(cell(cells[columns.growth])));
-    y.push(Math.log2(cell(cells[columns.death])));
-    values.push(cell(cells[columns.l2fc]));
-  };
-
-  // What follows the last newline read so far: the start of a line the next chunk finishes.
-  let partial = '';
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    const lines = (partial + decoder.decode(value, { stream: true })).split('\n');
-    partial = lines.pop() ?? '';
-    for (const line of lines) readLine(line);
   }
-  readLine(partial + decoder.decode());
-
-  return getFieldGrid(x, y, values);
+  return { x: growths.map(Math.log2), y: deaths.map(Math.log2), values };
 }
 
 // The grid line at or below `at` that has another above it. `at` is held to the grid's extent
