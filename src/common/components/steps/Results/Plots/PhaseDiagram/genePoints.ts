@@ -11,10 +11,11 @@ export type GeneMetadata = {
 
 export type GenePoint = Point<GeneMetadata>;
 
-const HIT_COLOR = '#a78bfa';
-const HIT_STROKE = '#7c3aed';
-const CONTROL_COLOR = '#6b6b6b';
-const BACKGROUND_COLOR = '#b0b0b0';
+// The white ring keeps the hits legible where the surface is darkest.
+const HIT_COLOR = '#5b3fa8';
+const HIT_STROKE = '#ffffff';
+const CONTROL_COLOR = '#4b5563';
+const BACKGROUND_COLOR = '#9aa1a9';
 
 // The kinds of point on the plot, as its legend names them.
 export const POINT_KINDS = [
