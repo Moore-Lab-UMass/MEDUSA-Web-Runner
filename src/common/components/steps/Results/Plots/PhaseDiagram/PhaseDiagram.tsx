@@ -11,8 +11,6 @@ import SurfaceLegend from './SurfaceLegend';
 import { genePoints, pointsWithin, sortedL2fcs } from './genePoints';
 import { SURFACE_COLORS, surfaceColorRange } from './surfaceScale';
 
-const MINIMAP = { position: { right: 50, bottom: 50 } };
-
 // ScatterPlot keeps 90px of each dimension for its axes (20 + 70 either way).
 const PLOT_MARGIN = 90;
 
@@ -57,7 +55,6 @@ export default function PhaseDiagram({ genes, proDeath, antiDeath, geneList, sur
             pointData={pointData}
             loading={false}
             controlsPosition="right"
-            miniMap={MINIMAP}
             xDomain={domains.xDomain}
             yDomain={domains.yDomain}
             leftAxisLabel="log₂(Relative Death Rate)"
