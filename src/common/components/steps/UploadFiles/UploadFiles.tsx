@@ -8,6 +8,8 @@ import Grid from '@mui/material/Grid';
 import ArrowForwardIcon from '@mui/icons-material/KeyboardArrowRight';
 import { UploadedFile } from '@/types';
 import UploadCard from './UploadCard';
+import TemplateOptions from './TemplateOptions';
+import { TemplateMode } from '@/common/templates';
 
 interface Props {
   trtFile: UploadedFile | null;
@@ -15,9 +17,21 @@ interface Props {
   onFileDrop: (type: 'trt' | 'unt', file: File) => void;
   onFileRemove: (type: 'trt' | 'unt') => void;
   onNext: () => void;
+  templateLoading: TemplateMode | null;
+  templateError: string | null;
+  onUseTemplate: (mode: TemplateMode) => void;
 }
 
-export default function UploadFiles({ trtFile, untFile, onFileDrop, onFileRemove, onNext }: Props) {
+export default function UploadFiles({
+  trtFile,
+  untFile,
+  onFileDrop,
+  onFileRemove,
+  onNext,
+  templateLoading,
+  templateError,
+  onUseTemplate,
+}: Props) {
   const trtInputRef = useRef<HTMLInputElement>(null);
   const untInputRef = useRef<HTMLInputElement>(null);
 
@@ -70,6 +84,8 @@ export default function UploadFiles({ trtFile, untFile, onFileDrop, onFileRemove
           style={{ display: 'none' }}
           onChange={(e) => handleFileInput('unt', e.target)}
         />
+
+        <TemplateOptions loading={templateLoading} error={templateError} onSelect={onUseTemplate} />
       </Paper>
 
       <Box
