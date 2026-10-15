@@ -31,9 +31,9 @@ interface Props {
 
 const MODE_LABELS = { full: 'Fully parameterized', gm: 'GM' };
 
-// Each pane's height, header included, side by side or stacked. The table pane fits ten rows a
-// page (see GeneTable).
-const PANE_HEIGHT = '650px';
+// Below md the grey results card doesn't grow to fill the page (see Results' own sx below), so the
+// panes fall back to a fixed height here instead of filling it.
+const FALLBACK_PANE_HEIGHT = '650px';
 
 // The top hits' tabs, less what they list, shared by both modes.
 const PRO_DEATH = {
@@ -153,16 +153,38 @@ function ResultsBody({ results, parameters, surface }: BodyProps) {
       )}
       {/* The table and the plots side by side, with a draggable divider between them. They stack,
           table first, where the row is too narrow to give the phase diagram room. */}
-      <Paper sx={{ p: 2 }}>
-        <TwoPaneLayout
-          TableComponent={table}
-          plots={plots}
-          direction={{ xs: 'column', lg: 'row' }}
-          rowHeight={PANE_HEIGHT}
-          columnHeight={PANE_HEIGHT}
-          // The plot tabs have no icons, so their labels have to stay up when the panes stack.
-          showTabLabels
-        />
+      <Paper
+        sx={{
+          p: 2,
+          display: 'flex',
+          flexDirection: 'column',
+          flex: { md: '1 1 0px' },
+          minHeight: { md: 0 },
+        }}
+      >
+        {/* TwoPaneLayout's own pane boxes take a plain CSS height, which can't see past its own
+            grid wrapper's auto height to this box's flex-resolved one. Container query units route
+            around that: `md+` makes this box a sized query container (via the flex-grow above) and
+            `100cqh` reads its height directly, however many un-sized boxes sit in between. Below md
+            the grey card above doesn't grow either, so this box keeps a fixed height instead. */}
+        <Box
+          sx={{
+            flex: { md: '1 1 0px' },
+            minHeight: { md: 0 },
+            height: { xs: FALLBACK_PANE_HEIGHT, md: 'auto' },
+            containerType: 'size',
+          }}
+        >
+          <TwoPaneLayout
+            TableComponent={table}
+            plots={plots}
+            direction={{ xs: 'column', lg: 'row' }}
+            rowHeight="100cqh"
+            columnHeight="100cqh"
+            // The plot tabs have no icons, so their labels have to stay up when the panes stack.
+            showTabLabels
+          />
+        </Box>
       </Paper>
     </>
   );
