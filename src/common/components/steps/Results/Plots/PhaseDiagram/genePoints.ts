@@ -1,11 +1,11 @@
 import { Point } from '@weng-lab/visualization';
-import { PhaseSurface, surfaceAt } from '@/common/phaseSurface';
+import { PhaseSurface } from '@/common/phaseSurface';
 import { FullGeneRow } from '@/common/results';
 
 export type GeneMetadata = {
   gene: string;
   group: 'Anti-Death' | 'Pro-Death' | 'Selected' | 'Control' | 'Gene';
-  // The surface's L2FC TRvUT where the gene sits. Null without a surface, or off its grid.
+  // The surface's L2FC TRvUT where the gene sits. Null without a surface, or where it has none.
   l2fc: number | null;
 };
 
@@ -59,7 +59,7 @@ export function genePoints(
   for (const { gene, control, log2Growth, log2Death } of genes) {
     const group = groups.get(gene);
     const point = { x: log2Growth, y: log2Death };
-    const value = surface ? surfaceAt(surface, log2Growth, log2Death) : NaN;
+    const value = surface ? surface.l2fcAt(log2Growth, log2Death) : NaN;
     const l2fc = Number.isFinite(value) ? value : null;
     if (group) {
       const metaData = { gene, group, l2fc };

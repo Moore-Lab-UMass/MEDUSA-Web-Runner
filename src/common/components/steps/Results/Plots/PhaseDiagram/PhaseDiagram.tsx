@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import { getSharedDomains, RampRange, ScatterPlot, sweptValues } from '@weng-lab/visualization';
-import { PhaseSurface } from '@/common/phaseSurface';
+import { PhaseSurface, surfaceOver } from '@/common/phaseSurface';
 import { FullGeneRow } from '@/common/results';
 import PlotFrame from '../PlotFrame';
 import GeneTooltip from './GeneTooltip';
@@ -13,6 +13,15 @@ import { SURFACE_COLORS, surfaceColorRange } from './surfaceScale';
 
 // ScatterPlot keeps 90px of each dimension for its axes (20 + 70 either way).
 const PLOT_MARGIN = 90;
+
+// ScatterPlot zooms out no further than half scale, which shows half its domain's span again past
+// either end, and pans no further than that shows. The background is drawn a little past it, so
+// its edge never comes into view.
+const FIELD_REACH = 0.55;
+const reach = ([low, high]: [number, number]): [number, number] => {
+  const pad = (high - low) * FIELD_REACH;
+  return [low - pad, high + pad];
+};
 
 interface Props {
   genes: FullGeneRow[];
@@ -33,6 +42,11 @@ export default function PhaseDiagram({ genes, proDeath, antiDeath, geneList, sur
   // The domains the plot would settle on itself, taken here so the colors can be fitted to them.
   const domains = useMemo(() => getSharedDomains(pointData), [pointData]);
   const colorRange = useMemo(() => (surface ? surfaceColorRange(surface, domains) : null), [surface, domains]);
+  // What the background paints: the model across everything the plot can be zoomed or panned to.
+  const field = useMemo(
+    () => (surface ? surfaceOver(surface, reach(domains.xDomain), reach(domains.yDomain)) : null),
+    [surface, domains],
+  );
   const l2fcs = useMemo(() => sortedL2fcs(pointData), [pointData]);
 
   // Sweeping the colorbar spotlights the genes whose L2FC lies in the stretch under the cursor.
@@ -69,9 +83,9 @@ export default function PhaseDiagram({ genes, proDeath, antiDeath, geneList, sur
             animationGroupSize={50}
             tooltipBody={(point) => <GeneTooltip point={point} />}
             backgroundField={
-              surface && colorRange
+              field && colorRange
                 ? {
-                    ...surface,
+                    ...field,
                     domain: colorRange,
                     colorScale: SURFACE_COLORS,
                     legend: (slot) => (

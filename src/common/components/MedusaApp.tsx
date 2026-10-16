@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useReducer, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import StepLayout from './StepLayout';
 import UploadFiles from './steps/UploadFiles/UploadFiles';
@@ -32,41 +32,67 @@ const DEFAULT_FORM: FormValues = {
   plot: true,
 };
 
+// What the two steps collect: the files, the parameters, and which step is showing.
+type Setup = {
+  step: 1 | 2;
+  trtFile: UploadedFile | null;
+  untFile: UploadedFile | null;
+  formValues: FormValues;
+  formErrors: FormErrors;
+};
+
+type SetupAction =
+  | { type: 'goTo'; step: 1 | 2 }
+  | { type: 'setFile'; which: 'trt' | 'unt'; file: UploadedFile | null }
+  | { type: 'editForm'; field: keyof FormValues; value: string | boolean }
+  | { type: 'fillForm'; values: FormValues }
+  | { type: 'rejectForm'; errors: FormErrors }
+  | { type: 'loadTemplate'; trt: UploadedFile; unt: UploadedFile; values: FormValues };
+
+const INITIAL_SETUP: Setup = { step: 1, trtFile: null, untFile: null, formValues: DEFAULT_FORM, formErrors: {} };
+
+// Any change to the parameters clears their errors: the ED / drug-parameter rule spans several
+// fields, so one edit can resolve errors on others.
+function setupReducer(state: Setup, action: SetupAction): Setup {
+  switch (action.type) {
+    case 'goTo':
+      return { ...state, step: action.step };
+    case 'setFile':
+      return action.which === 'trt' ? { ...state, trtFile: action.file } : { ...state, untFile: action.file };
+    case 'editForm':
+      return { ...state, formValues: { ...state.formValues, [action.field]: action.value }, formErrors: {} };
+    case 'fillForm':
+      return { ...state, formValues: action.values, formErrors: {} };
+    case 'rejectForm':
+      return { ...state, formErrors: action.errors };
+    case 'loadTemplate':
+      return { step: 2, trtFile: action.trt, untFile: action.unt, formValues: action.values, formErrors: {} };
+  }
+}
+
 export default function MedusaApp() {
   const router = useRouter();
-  const [step, setStep] = useState<1 | 2>(1);
-  const [trtFile, setTrtFile] = useState<UploadedFile | null>(null);
-  const [untFile, setUntFile] = useState<UploadedFile | null>(null);
-  const [formValues, setFormValues] = useState<FormValues>(DEFAULT_FORM);
-  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [{ step, trtFile, untFile, formValues, formErrors }, dispatch] = useReducer(setupReducer, INITIAL_SETUP);
   const [submit, setSubmit] = useState<SubmitState>({ phase: 'idle' });
-  const [templateLoading, setTemplateLoading] = useState<TemplateMode | null>(null);
-  const [templateError, setTemplateError] = useState<string | null>(null);
+  const [template, setTemplate] = useState<{ loading: TemplateMode | null; error: string | null }>({
+    loading: null,
+    error: null,
+  });
+  const setStep = (to: 1 | 2) => dispatch({ type: 'goTo', step: to });
 
-  const handleFormChange = (field: keyof FormValues, value: string | boolean) => {
-    setFormValues((prev) => ({ ...prev, [field]: value }));
-    // The ED / drug-parameter rule spans several fields, so one edit can resolve errors on others.
-    setFormErrors({});
-  };
+  const handleFormChange = (field: keyof FormValues, value: string | boolean) =>
+    dispatch({ type: 'editForm', field, value });
 
   // TEMP
-  const handleLoadTestParameters = () => {
-    setFormValues(templateFormValues('full', DEFAULT_FORM));
-    setFormErrors({});
-  };
+  const handleLoadTestParameters = () => dispatch({ type: 'fillForm', values: templateFormValues('full', DEFAULT_FORM) });
 
   const handleFileDrop = async (type: 'trt' | 'unt', file: File) => {
     const sizeMB = (file.size / 1024 / 1024).toFixed(1) + ' MB';
     const error = await validateCsvFile(file);
-    const uploaded: UploadedFile = { file, name: file.name, sizeMB, error };
-    if (type === 'trt') setTrtFile(uploaded);
-    else setUntFile(uploaded);
+    dispatch({ type: 'setFile', which: type, file: { file, name: file.name, sizeMB, error } });
   };
 
-  const handleFileRemove = (type: 'trt' | 'unt') => {
-    if (type === 'trt') setTrtFile(null);
-    else setUntFile(null);
-  };
+  const handleFileRemove = (type: 'trt' | 'unt') => dispatch({ type: 'setFile', which: type, file: null });
 
   // Explicit args let the template flow run immediately on freshly fetched files/values instead
   // of waiting on state updates to land; the "Run Simulation" button relies on the state defaults.
@@ -79,7 +105,7 @@ export default function MedusaApp() {
 
     const { parameters, errors } = buildParameters(values);
     if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
+      dispatch({ type: 'rejectForm', errors });
       return;
     }
 
@@ -142,23 +168,17 @@ export default function MedusaApp() {
   };
 
   const handleUseTemplate = async (mode: TemplateMode) => {
-    setTemplateError(null);
-    setTemplateLoading(mode);
+    setTemplate({ loading: mode, error: null });
     try {
       const { trt, unt } = await loadTemplateFiles();
       const values = templateFormValues(mode, DEFAULT_FORM);
-      setTrtFile(trt);
-      setUntFile(unt);
-      setFormValues(values);
-      setFormErrors({});
-      setStep(2);
-      setTemplateLoading(null);
+      dispatch({ type: 'loadTemplate', trt, unt, values });
+      setTemplate({ loading: null, error: null });
       // Fully parameterized mode is the "just show me" demo; general mode lands on Set
       // Parameters so the sample ED value is visible before the user runs it.
       if (mode === 'full') await handleRunSimulation(trt, unt, values);
     } catch (error) {
-      setTemplateLoading(null);
-      setTemplateError(error instanceof Error ? error.message : 'Could not load the template.');
+      setTemplate({ loading: null, error: error instanceof Error ? error.message : 'Could not load the template.' });
     }
   };
 
@@ -179,8 +199,8 @@ export default function MedusaApp() {
           onFileDrop={handleFileDrop}
           onFileRemove={handleFileRemove}
           onNext={() => setStep(2)}
-          templateLoading={templateLoading}
-          templateError={templateError}
+          templateLoading={template.loading}
+          templateError={template.error}
           onUseTemplate={handleUseTemplate}
         />
       )}

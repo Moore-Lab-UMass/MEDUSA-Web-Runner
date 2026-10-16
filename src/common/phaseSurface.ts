@@ -1,9 +1,14 @@
 import { BackgroundField } from '@weng-lab/visualization';
 import { RunParameters } from '@/types';
 
-// The model's L2FC_TRvUT over the phase diagram's plane: x is log2 of the relative growth rate
-// and y log2 of the relative death rate, which the genes are placed by.
-export type PhaseSurface = Pick<BackgroundField, 'x' | 'y' | 'values'>;
+// L2FC_TRvUT on a grid over the phase diagram's plane: x is log2 of the relative growth rate and
+// y log2 of the relative death rate, which the genes are placed by.
+export type SurfaceGrid = Pick<BackgroundField, 'x' | 'y' | 'values'>;
+
+// The model's L2FC_TRvUT on the grid MEDUSA simulates, and anywhere else on the plane.
+export interface PhaseSurface extends SurfaceGrid {
+  l2fcAt: (log2Growth: number, log2Death: number) => number;
+}
 
 // What MEDUSA uses when num_iter was left out of the run.
 const DEFAULT_NUM_ITER = 1000;
@@ -69,35 +74,34 @@ export function simulateSurface(parameters: RunParameters): PhaseSurface | null 
       values[j * growths.length + i] = Math.log2(treated(beforeDeath, deaths[j]) / untreatedCells / wildType);
     }
   }
-  return { x: growths.map(Math.log2), y: deaths.map(Math.log2), values };
+  // The same arithmetic off the grid: past 1.5 times wild type's growth, say, or past the death
+  // rate that leaves a single cell, where the treated arm stays held at one.
+  const l2fcAt = (log2Growth: number, log2Death: number) => {
+    const growth = 2 ** log2Growth;
+    return Math.log2(treated(treatedBeforeDeath(growth), 2 ** log2Death) / untreated(growth) / wildType);
+  };
+  return { x: growths.map(Math.log2), y: deaths.map(Math.log2), values, l2fcAt };
 }
 
-// The grid line at or below `at` that has another above it. `at` is held to the grid's extent
-// first: gene rates are stored as float32, so one on the grid's edge can round just past it.
-function lineBelow(lines: ArrayLike<number>, at: number) {
-  const last = lines.length - 1;
-  const held = Math.min(Math.max(at, lines[0]), lines[last]);
-  let low = 0;
-  let high = last;
-  while (high - low > 1) {
-    const middle = (low + high) >> 1;
-    if (lines[middle] <= held) low = middle;
-    else high = middle;
-  }
-  return { line: low, along: (held - lines[low]) / (lines[low + 1] - lines[low]) };
-}
+// Lines each way of a grid drawn from the model: as many as the plot's raster of it has pixels.
+const FIELD_LINES = 1024;
 
 /**
- * The surface's value at a point, interpolated between the four grid values around it, as the
- * plot paints it. NaN where any of the four is missing, or the grid has no cell to be inside.
+ * The surface across a stretch of the plane, worked out from the model at every point of an even
+ * grid over it. MEDUSA's own grid stops short of what a zoomed-out plot can show, and is spread
+ * from near zero growth, so little of it lands in view; this covers just the stretch asked for,
+ * evenly in the log2 rates the plot is drawn in.
  */
-export function surfaceAt({ x, y, values }: PhaseSurface, atX: number, atY: number): number {
-  if (x.length < 2 || y.length < 2) return NaN;
-  const column = lineBelow(x, atX);
-  const row = lineBelow(y, atY);
-  const at = (i: number, j: number) => values[j * x.length + i];
-  const below = at(column.line, row.line) + (at(column.line + 1, row.line) - at(column.line, row.line)) * column.along;
-  const above =
-    at(column.line, row.line + 1) + (at(column.line + 1, row.line + 1) - at(column.line, row.line + 1)) * column.along;
-  return below + (above - below) * row.along;
+export function surfaceOver(
+  { l2fcAt }: PhaseSurface,
+  [xLow, xHigh]: readonly [number, number],
+  [yLow, yHigh]: readonly [number, number],
+): SurfaceGrid {
+  const x = Float64Array.from(linspace(xLow, xHigh, FIELD_LINES));
+  const y = Float64Array.from(linspace(yLow, yHigh, FIELD_LINES));
+  const values = new Float32Array(x.length * y.length);
+  for (let j = 0; j < y.length; j++) {
+    for (let i = 0; i < x.length; i++) values[j * x.length + i] = l2fcAt(x[i], y[j]);
+  }
+  return { x, y, values };
 }
