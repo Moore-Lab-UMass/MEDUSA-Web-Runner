@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import { TableColDef } from '@weng-lab/ui-components';
-import GeneTable, { GeneRow } from './GeneTable';
+import GeneTable, { GeneRow, GeneSelection } from './GeneTable';
 
 export interface GeneTab {
   label: string;
@@ -19,10 +19,26 @@ export interface GeneTab {
 }
 
 // The table's tabs as a row of pills, each with its count, so they double as the run's stats.
-export default function TableTabs({ tabs, columns }: { tabs: GeneTab[]; columns: TableColDef[] }) {
+export default function TableTabs({
+  tabs,
+  columns,
+  selection,
+}: {
+  tabs: GeneTab[];
+  columns: TableColDef[];
+  selection?: GeneSelection;
+}) {
   // Null until a pill is picked, which opens the first tab.
   const [value, setValue] = useState<string | null>(null);
   const open = tabs.find((tab) => tab.genes && tab.label === value) ?? tabs[0];
+
+  // Opening a tab that doesn't list the selected gene selects its first, so the selection is
+  // always a row in view.
+  const openTab = (tab: GeneTab) => {
+    setValue(tab.label);
+    const first = tab.genes?.[0];
+    if (selection && first && !tab.genes?.some((row) => row.gene === selection.gene)) selection.onSelect(first.gene);
+  };
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -40,7 +56,7 @@ export default function TableTabs({ tabs, columns }: { tabs: GeneTab[]; columns:
                   variant={selected ? 'filled' : 'outlined'}
                   color={selected ? 'primary' : 'default'}
                   disabled={!tab.genes}
-                  onClick={tab.genes ? () => setValue(tab.label) : undefined}
+                  onClick={tab.genes ? () => openTab(tab) : undefined}
                   label={
                     <>
                       <Box component="span" sx={{ fontWeight: 800, mr: 0.75 }}>
@@ -59,7 +75,7 @@ export default function TableTabs({ tabs, columns }: { tabs: GeneTab[]; columns:
         })}
       </Box>
       <Box sx={{ flex: 1, minHeight: 0 }}>
-        <GeneTable genes={open.genes ?? []} columns={columns} title={open.title} />
+        <GeneTable genes={open.genes ?? []} columns={columns} title={open.title} selection={selection} />
       </Box>
     </Box>
   );

@@ -1,6 +1,7 @@
 import { Point } from '@weng-lab/visualization';
 import { PhaseSurface } from '@/common/phaseSurface';
 import { FullGeneRow } from '@/common/results';
+import { PLOT_COLORS } from '../plotColors';
 
 export type GeneMetadata = {
   gene: string;
@@ -11,17 +12,12 @@ export type GeneMetadata = {
 
 export type GenePoint = Point<GeneMetadata>;
 
-// The white ring keeps the hits legible where the surface is darkest.
-const HIT_COLOR = '#5b3fa8';
-const HIT_STROKE = '#ffffff';
-const CONTROL_COLOR = '#4b5563';
-const BACKGROUND_COLOR = '#9aa1a9';
 
 // The kinds of point on the plot, as its legend names them.
 export const POINT_KINDS = [
-  { label: 'Top hits', color: HIT_COLOR },
-  { label: 'Non-targeting controls', color: CONTROL_COLOR },
-  { label: 'Other genes', color: BACKGROUND_COLOR },
+  { label: 'Top hits', color: PLOT_COLORS.highlight },
+  { label: 'Non-targeting controls', color: PLOT_COLORS.control },
+  { label: 'Other genes', color: PLOT_COLORS.background },
 ];
 
 // Which genes are highlighted, and as what: the run's gene_list where it has one, and its top
@@ -63,11 +59,11 @@ export function genePoints(
     const l2fc = Number.isFinite(value) ? value : null;
     if (group) {
       const metaData = { gene, group, l2fc };
-      hits.push({ ...point, color: HIT_COLOR, stroke: HIT_STROKE, r: 5, label: gene, metaData });
+      hits.push({ ...point, color: PLOT_COLORS.highlight, stroke: PLOT_COLORS.highlightRing, r: 5, label: gene, metaData });
     } else if (control) {
-      controls.push({ ...point, color: CONTROL_COLOR, metaData: { gene, group: 'Control', l2fc } });
+      controls.push({ ...point, color: PLOT_COLORS.control, metaData: { gene, group: 'Control', l2fc } });
     } else {
-      background.push({ ...point, color: BACKGROUND_COLOR, metaData: { gene, group: 'Gene', l2fc } });
+      background.push({ ...point, color: PLOT_COLORS.background, metaData: { gene, group: 'Gene', l2fc } });
     }
   }
   // Later points draw on top: controls over the cloud, hits over both.

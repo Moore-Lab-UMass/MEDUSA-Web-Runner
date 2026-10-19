@@ -21,14 +21,16 @@ const CARDS: TemplateCardConfig[] = [
   {
     mode: 'full',
     title: 'Fully Parameterized Mode',
-    description: 'Best when every drug-response rate is known (NPG, GRdrug1, Do, GRdrug2, DRdrug). Loads a sample run — triptolide (TRP) on U2OS cells — and runs it immediately.',
+    description:
+      "Best when every rate of the drug's response is known (NPG, GRdrug1, Do, GRdrug2, DRdrug). Loads a sample screen — triptolide (TRP) on U2OS cells — and runs it immediately.",
     cta: 'Run sample analysis',
     icon: <TuneOutlinedIcon sx={{ fontSize: 22, color: 'primary.main' }} />,
   },
   {
     mode: 'gm',
     title: 'General Mode',
-    description: 'Use when some or all screen parameters are unknown. Only NPG is required; MEDUSA returns a distribution of possible solutions per gene. Loads into Set Parameters for review.',
+    description:
+      "Use when some or all of the drug's rates are unknown. Needs only NPG and the effective dose (ED), and returns a distribution of possible solutions per gene. Loads the same sample into Set Parameters for review.",
     cta: 'Review sample parameters',
     icon: <LeaderboardIcon sx={{ fontSize: 22, color: 'primary.main' }} />,
   },

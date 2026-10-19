@@ -1,4 +1,6 @@
 export interface FormValues {
+  // The mode the user picked, which decides the parameters asked for.
+  mode: RunMode;
   npg: string;
   t_end_unt: string;
   t_end_tr: string;
@@ -15,8 +17,6 @@ export interface FormValues {
   nont_id: string;
   max_guides_nont: string;
   bootstraps: string;
-  stats: boolean;
-  plot: boolean;
 }
 
 export type FormErrors = Partial<Record<keyof FormValues, string>>;
@@ -62,7 +62,7 @@ export interface RunParameters {
   nont_id?: string;
 }
 
-// "full" supplies all four drug parameters; anything less is GM and requires ED.
+// "full" supplies all four drug parameters; GM leaves at least one out and requires ED instead.
 export type RunMode = 'full' | 'gm';
 
 export type RunStatus = 'CREATED' | 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'FAILED' | 'CANCELLED';

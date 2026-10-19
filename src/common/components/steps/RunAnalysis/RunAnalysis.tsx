@@ -25,6 +25,8 @@ interface Props {
   // False when the page was opened on a run that had already ended, whose log is shown whole.
   animateLog: boolean;
   connectionLost: boolean;
+  // The run is still QUEUED or RUNNING long after its worker must have stopped.
+  abandoned: boolean;
   onNewAnalysis: () => void;
   onViewResults: () => void;
 }
@@ -47,6 +49,7 @@ export default function RunAnalysis({
   logs,
   animateLog,
   connectionLost,
+  abandoned,
   onNewAnalysis,
   onViewResults,
 }: Props) {
@@ -63,10 +66,17 @@ export default function RunAnalysis({
   return (
     <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', flex: { md: 1 } }}>
       <Paper sx={{ p: { xs: 2.5, sm: 4 }, display: 'flex', flexDirection: 'column', flex: { md: 1 } }}>
-        <JobHeader status={run?.status ?? null} />
+        <JobHeader status={run?.status ?? null} abandoned={abandoned} />
         {connectionLost && (
           <Alert severity="warning" sx={{ mt: 2 }}>
             Lost contact with the MEDUSA API. Retrying; the run itself is not affected.
+          </Alert>
+        )}
+        {abandoned && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            This run stopped without finishing. MEDUSA&apos;s worker has 30 minutes and 1 GiB of memory, and is
+            stopped outright past either, before it can report the failure. General mode runs with many matching
+            simulations are the usual cause: start a new analysis with a narrower search.
           </Alert>
         )}
         {(run?.status === 'FAILED' || run?.status === 'CANCELLED') && (

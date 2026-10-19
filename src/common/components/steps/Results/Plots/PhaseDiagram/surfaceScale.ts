@@ -1,11 +1,9 @@
 import { evenStops } from '@weng-lab/visualization';
 import { PhaseSurface } from '@/common/phaseSurface';
+import { SURFACE_COLORS } from '../plotColors';
 
 export const SURFACE_LABEL = 'L2FC TRvUT';
 
-// From the lowest L2FC to the highest: blue to red, as MEDUSA's own plot colors them, but muted,
-// and with the two arms matched step for step in lightness so neither end reads louder.
-export const SURFACE_COLORS = ['#4393c3', '#92c5de', '#f7f7f7', '#f4a582', '#d6604d'];
 export const SURFACE_STOPS = evenStops(SURFACE_COLORS);
 
 export const formatL2fc = (value: number) => value.toFixed(2).replace('-', '−');

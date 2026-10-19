@@ -12,6 +12,7 @@ import { loadTemplateFiles, templateFormValues, TemplateMode } from '@/common/te
 import { FormErrors, FormValues, SubmitState, UploadedFile } from '@/types';
 
 const DEFAULT_FORM: FormValues = {
+  mode: 'full',
   npg: '0.0231',
   t_end_unt: '120',
   t_end_tr: '120',
@@ -23,13 +24,13 @@ const DEFAULT_FORM: FormValues = {
   drdrug: '',
   ed_err: '0.02',
   sim_perm: '10',
-  num_iter: '1000',
+  // Blank leaves it to MEDUSA's 1000 when fully parameterized, and to the finest that fits in
+  // general mode.
+  num_iter: '',
   gene_level: 'median',
   nont_id: 'NONT',
   max_guides_nont: '',
   bootstraps: '1000000',
-  stats: true,
-  plot: true,
 };
 
 // What the two steps collect: the files, the parameters, and which step is showing.
@@ -39,17 +40,26 @@ type Setup = {
   untFile: UploadedFile | null;
   formValues: FormValues;
   formErrors: FormErrors;
+  // A template's files are for its mode, so it fixes the mode until a file is changed.
+  modeLocked: boolean;
 };
 
 type SetupAction =
   | { type: 'goTo'; step: 1 | 2 }
   | { type: 'setFile'; which: 'trt' | 'unt'; file: UploadedFile | null }
-  | { type: 'editForm'; field: keyof FormValues; value: string | boolean }
+  | { type: 'editForm'; field: keyof FormValues; value: string }
   | { type: 'fillForm'; values: FormValues }
   | { type: 'rejectForm'; errors: FormErrors }
   | { type: 'loadTemplate'; trt: UploadedFile; unt: UploadedFile; values: FormValues };
 
-const INITIAL_SETUP: Setup = { step: 1, trtFile: null, untFile: null, formValues: DEFAULT_FORM, formErrors: {} };
+const INITIAL_SETUP: Setup = {
+  step: 1,
+  trtFile: null,
+  untFile: null,
+  formValues: DEFAULT_FORM,
+  formErrors: {},
+  modeLocked: false,
+};
 
 // Any change to the parameters clears their errors: the ED / drug-parameter rule spans several
 // fields, so one edit can resolve errors on others.
@@ -58,7 +68,9 @@ function setupReducer(state: Setup, action: SetupAction): Setup {
     case 'goTo':
       return { ...state, step: action.step };
     case 'setFile':
-      return action.which === 'trt' ? { ...state, trtFile: action.file } : { ...state, untFile: action.file };
+      return action.which === 'trt'
+        ? { ...state, trtFile: action.file, modeLocked: false }
+        : { ...state, untFile: action.file, modeLocked: false };
     case 'editForm':
       return { ...state, formValues: { ...state.formValues, [action.field]: action.value }, formErrors: {} };
     case 'fillForm':
@@ -66,13 +78,23 @@ function setupReducer(state: Setup, action: SetupAction): Setup {
     case 'rejectForm':
       return { ...state, formErrors: action.errors };
     case 'loadTemplate':
-      return { step: 2, trtFile: action.trt, untFile: action.unt, formValues: action.values, formErrors: {} };
+      return {
+        step: 2,
+        trtFile: action.trt,
+        untFile: action.unt,
+        formValues: action.values,
+        formErrors: {},
+        modeLocked: true,
+      };
   }
 }
 
 export default function MedusaApp() {
   const router = useRouter();
-  const [{ step, trtFile, untFile, formValues, formErrors }, dispatch] = useReducer(setupReducer, INITIAL_SETUP);
+  const [{ step, trtFile, untFile, formValues, formErrors, modeLocked }, dispatch] = useReducer(
+    setupReducer,
+    INITIAL_SETUP,
+  );
   const [submit, setSubmit] = useState<SubmitState>({ phase: 'idle' });
   const [template, setTemplate] = useState<{ loading: TemplateMode | null; error: string | null }>({
     loading: null,
@@ -80,11 +102,12 @@ export default function MedusaApp() {
   });
   const setStep = (to: 1 | 2) => dispatch({ type: 'goTo', step: to });
 
-  const handleFormChange = (field: keyof FormValues, value: string | boolean) =>
+  const handleFormChange = (field: keyof FormValues, value: string) =>
     dispatch({ type: 'editForm', field, value });
 
-  // TEMP
-  const handleLoadTestParameters = () => dispatch({ type: 'fillForm', values: templateFormValues('full', DEFAULT_FORM) });
+  // TEMP: the sample parameters for whichever mode is picked.
+  const handleLoadTestParameters = () =>
+    dispatch({ type: 'fillForm', values: templateFormValues(formValues.mode, DEFAULT_FORM) });
 
   const handleFileDrop = async (type: 'trt' | 'unt', file: File) => {
     const sizeMB = (file.size / 1024 / 1024).toFixed(1) + ' MB';
@@ -210,6 +233,7 @@ export default function MedusaApp() {
           untFile={untFile}
           formValues={formValues}
           formErrors={formErrors}
+          modeLocked={modeLocked}
           submit={submit}
           onFormChange={handleFormChange}
           onLoadTestParameters={handleLoadTestParameters}

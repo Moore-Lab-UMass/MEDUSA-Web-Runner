@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { noteRunStatus } from '@/common/runTimings';
 import { getLogs, getParameters, getRun, isTerminal, LOG_PAGE_SIZE, MedusaApiError } from '@/common/medusaApi';
+import { workerAbandoned } from '@/common/worker';
 import { LogChunk, RunParameters, RunState, RunStatus } from '@/types';
 
 const POLL_INTERVAL_MS = 2000;
@@ -36,6 +37,8 @@ export function useRun(runId: string) {
   // A failure that polling again will not fix, such as an unknown run ID.
   const [error, setError] = useState<Error | null>(null);
   const [connectionLost, setConnectionLost] = useState(false);
+  // Set when the run is still QUEUED or RUNNING long after its worker must have stopped.
+  const [abandoned, setAbandoned] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -83,12 +86,15 @@ export function useRun(runId: string) {
         setRun(state);
         setInitialStatus((prev) => prev ?? state.status);
 
-        const terminal = isTerminal(state.status);
+        // An abandoned run's status will never change, so it is polled no further, as if it had ended.
+        const lost = workerAbandoned(state);
+        const terminal = isTerminal(state.status) || lost;
         await fetchLogs(terminal);
         if (cancelled) return null;
 
         failures = 0;
         setConnectionLost(false);
+        setAbandoned(lost);
         return terminal ? null : POLL_INTERVAL_MS;
       } catch (caught) {
         if (cancelled) return null;
@@ -120,5 +126,5 @@ export function useRun(runId: string) {
     };
   }, [runId]);
 
-  return { run, parameters, initialStatus, logs, error, connectionLost };
+  return { run, parameters, initialStatus, logs, error, connectionLost, abandoned };
 }

@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -10,12 +10,15 @@ import DownloadIcon from '@mui/icons-material/Download';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import ArrowBackIcon from '@mui/icons-material/KeyboardArrowLeft';
 import { TwoPaneLayout, TwoPanePlotConfig } from '@weng-lab/ui-components';
+import { DeathSamplesState } from '@/common/hooks/useDeathSamples';
 import { RunResultsState } from '@/common/hooks/useRunResults';
 import { PhaseSurface } from '@/common/phaseSurface';
 import { RunResults, SIGNIFICANCE_FDR, TOP_HITS, topHits } from '@/common/results';
 import { RunParameters } from '@/types';
 import TableTabs, { GeneTab } from './TableTabs';
+import { GeneRow } from './GeneTable';
 import PhaseDiagram from './Plots/PhaseDiagram/PhaseDiagram';
+import DeathHistogram from './Plots/DeathHistogram/DeathHistogram';
 import OutputFilesDialog from './OutputFilesDialog';
 import { fullColumns, GM_COLUMNS } from './columns';
 
@@ -25,11 +28,13 @@ interface Props {
   results: RunResultsState;
   // The simulation behind a fully parameterized run. Null for a GM run.
   surface: PhaseSurface | null;
+  // Every matching simulation's death rates, for a GM run's histograms.
+  samples: DeathSamplesState;
   onBack: () => void;
   onNewAnalysis: () => void;
 }
 
-const MODE_LABELS = { full: 'Fully parameterized', gm: 'GM' };
+const MODE_LABELS = { full: 'Fully parameterized', gm: 'General' };
 
 // Below md the grey results card doesn't grow to fill the page (see Results' own sx below), so the
 // panes fall back to a fixed height here instead of filling it.
@@ -47,102 +52,14 @@ const ANTI_DEATH = {
   description: `Top ${TOP_HITS} anti-death genes`,
 };
 
-interface BodyProps {
+interface LayoutProps {
   results: RunResults;
-  parameters: RunParameters | null;
-  surface: PhaseSurface | null;
+  table: React.ReactNode;
+  plots: TwoPanePlotConfig[];
 }
 
-function ResultsBody({ results, parameters, surface }: BodyProps) {
-  // Control groups are not genes, so they stay out of the count, though the table still lists them.
-  const total: GeneTab = {
-    label: 'Total Genes',
-    title: 'All Genes',
-    description: 'Every gene in the run, not counting controls. The table lists the controls too.',
-    count: results.rows.filter((row) => !row.control).length.toLocaleString(),
-    genes: results.rows,
-  };
-
-  // The two modes share a layout but not their columns, their third tab, or their plots.
-  let table: React.ReactNode;
-  let plots: TwoPanePlotConfig[];
-
-  if (results.mode === 'full') {
-    const { proDeath, antiDeath } = topHits(results.rows);
-    const significant = results.rows.filter(
-      (row) => !row.control && row.deathFdr !== null && row.deathFdr < SIGNIFICANCE_FDR,
-    );
-    table = (
-      <TableTabs
-        columns={fullColumns(results.hasStats)}
-        tabs={[
-          { ...PRO_DEATH, count: String(proDeath.length), genes: proDeath },
-          { ...ANTI_DEATH, count: String(antiDeath.length), genes: antiDeath },
-          // Without stats the run has no FDR to count by, and so nothing to list.
-          {
-            label: 'Significant',
-            title: `Significant Genes (death FDR < ${SIGNIFICANCE_FDR})`,
-            description: results.hasStats
-              ? `Genes with a death FDR below ${SIGNIFICANCE_FDR}`
-              : `Genes with a death FDR below ${SIGNIFICANCE_FDR}. This run has no stats to take an FDR from.`,
-            count: results.hasStats ? significant.length.toLocaleString() : '—',
-            genes: results.hasStats ? significant : undefined,
-          },
-          total,
-        ]}
-      />
-    );
-    plots = [
-      {
-        tabTitle: 'Phase Diagram',
-        plotComponent: (
-          <PhaseDiagram
-            genes={results.rows}
-            proDeath={proDeath}
-            antiDeath={antiDeath}
-            geneList={parameters?.gene_list}
-            surface={surface}
-          />
-        ),
-      },
-    ];
-  } else {
-    const { proDeath, antiDeath } = topHits(results.rows);
-    const regulators = results.rows.filter(
-      (row) => !row.control && row.deathPredict.toLowerCase().includes('regulator'),
-    );
-    table = (
-      <TableTabs
-        columns={GM_COLUMNS}
-        tabs={[
-          { ...PRO_DEATH, count: String(proDeath.length), genes: proDeath },
-          { ...ANTI_DEATH, count: String(antiDeath.length), genes: antiDeath },
-          {
-            label: 'Regulators',
-            title: 'Death-Rate Regulators',
-            description: 'Genes predicted to regulate the death rate',
-            count: regulators.length.toLocaleString(),
-            genes: regulators,
-          },
-          total,
-        ]}
-      />
-    );
-    plots = [
-      {
-        tabTitle: 'Histograms',
-        plotComponent: (
-          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-            <Typography sx={{ fontSize: 13, color: '#888', textAlign: 'center', maxWidth: 360 }}>
-              GM runs produce per-gene histograms rather than a phase diagram. Interactive histograms are
-              not built yet; the worker&apos;s histogram images are under Download Output Files.
-            </Typography>
-          </Box>
-        ),
-      },
-    ];
-  }
-
+// The table and the plots side by side, under a note of any rows the summary had to leave out.
+function ResultsLayout({ results, table, plots }: LayoutProps) {
   return (
     <>
       {results.excluded > 0 && (
@@ -152,7 +69,7 @@ function ResultsBody({ results, parameters, surface }: BodyProps) {
         </Alert>
       )}
       {/* The table and the plots side by side, with a draggable divider between them. They stack,
-          table first, where the row is too narrow to give the phase diagram room. */}
+          table first, where the row is too narrow to give the plot room. */}
       <Paper
         sx={{
           p: 2,
@@ -190,7 +107,115 @@ function ResultsBody({ results, parameters, surface }: BodyProps) {
   );
 }
 
-export default function Results({ runId, parameters, results, surface, onBack, onNewAnalysis }: Props) {
+// Control groups are not genes, so they stay out of the count, though the table still lists them.
+function totalTab(rows: GeneRow[]): GeneTab {
+  return {
+    label: 'Total Genes',
+    title: 'All Genes',
+    description: 'Every gene in the run, not counting controls. The table lists the controls too.',
+    count: rows.filter((row) => !row.control).length.toLocaleString(),
+    genes: rows,
+  };
+}
+
+interface FullBodyProps {
+  results: Extract<RunResults, { mode: 'full' }>;
+  parameters: RunParameters | null;
+  surface: PhaseSurface | null;
+}
+
+function FullResultsBody({ results, parameters, surface }: FullBodyProps) {
+  const { proDeath, antiDeath } = topHits(results.rows);
+  const significant = results.rows.filter(
+    (row) => !row.control && row.deathFdr !== null && row.deathFdr < SIGNIFICANCE_FDR,
+  );
+  const table = (
+    <TableTabs
+      columns={fullColumns(results.hasStats)}
+      tabs={[
+        { ...PRO_DEATH, count: String(proDeath.length), genes: proDeath },
+        { ...ANTI_DEATH, count: String(antiDeath.length), genes: antiDeath },
+        // Runs from before stats were always on have no FDR to count by, and so nothing to list.
+        {
+          label: 'Significant',
+          title: `Significant Genes (death FDR < ${SIGNIFICANCE_FDR})`,
+          description: results.hasStats
+            ? `Genes with a death FDR below ${SIGNIFICANCE_FDR}`
+            : `Genes with a death FDR below ${SIGNIFICANCE_FDR}. This run has no stats to take an FDR from.`,
+          count: results.hasStats ? significant.length.toLocaleString() : '—',
+          genes: results.hasStats ? significant : undefined,
+        },
+        totalTab(results.rows),
+      ]}
+    />
+  );
+  const plots = [
+    {
+      tabTitle: 'Phase Diagram',
+      plotComponent: (
+        <PhaseDiagram
+          genes={results.rows}
+          proDeath={proDeath}
+          antiDeath={antiDeath}
+          geneList={parameters?.gene_list}
+          surface={surface}
+        />
+      ),
+    },
+  ];
+  return <ResultsLayout results={results} table={table} plots={plots} />;
+}
+
+interface GmBodyProps {
+  results: Extract<RunResults, { mode: 'gm' }>;
+  parameters: RunParameters | null;
+  samples: DeathSamplesState;
+}
+
+function GmResultsBody({ results, parameters, samples }: GmBodyProps) {
+  const { proDeath, antiDeath } = topHits(results.rows);
+  const regulators = results.rows.filter(
+    (row) => !row.control && row.deathPredict.toLowerCase().includes('regulator'),
+  );
+
+  // One gene is always selected, and its histogram shown. Until the reader picks one, that is the
+  // run's first gene_list gene, or failing that its top pro-death hit, as MEDUSA's own plots start.
+  const [picked, setPicked] = useState<string | null>(null);
+  const geneList = parameters?.gene_list;
+  // gene_list is matched case-insensitively, as MEDUSA matches it.
+  const firstListed = useMemo(() => {
+    if (!geneList) return undefined;
+    const byName = new Map(results.rows.map((row) => [row.gene.toLowerCase(), row]));
+    return geneList.map((gene) => byName.get(gene.toLowerCase())).find((row) => row !== undefined);
+  }, [geneList, results.rows]);
+  const selected =
+    results.rows.find((row) => row.gene === picked) ?? firstListed ?? proDeath[0] ?? results.rows[0] ?? null;
+
+  const table = (
+    <TableTabs
+      columns={GM_COLUMNS}
+      selection={selected ? { gene: selected.gene, onSelect: setPicked } : undefined}
+      tabs={[
+        { ...PRO_DEATH, count: String(proDeath.length), genes: proDeath },
+        { ...ANTI_DEATH, count: String(antiDeath.length), genes: antiDeath },
+        {
+          label: 'Regulators',
+          title: 'Death-Rate Regulators',
+          description: 'Genes predicted to regulate the death rate',
+          count: regulators.length.toLocaleString(),
+          genes: regulators,
+        },
+        totalTab(results.rows),
+      ]}
+    />
+  );
+  const plots = [
+    { tabTitle: 'Histogram', plotComponent: <DeathHistogram gene={selected} samples={samples} /> },
+  ];
+  return <ResultsLayout results={results} table={table} plots={plots} />;
+}
+
+export default function Results({ runId, parameters, results, surface, samples, onBack, onNewAnalysis }: Props) {
   const [filesOpen, setFilesOpen] = useState(false);
 
   return (
@@ -248,12 +273,15 @@ export default function Results({ runId, parameters, results, surface, onBack, o
         )}
         {results.status === 'ready' && !results.results && (
           <Alert severity="info">
-            This run wrote no summary table (GM mode without stats). Its output files are under Download
-            Output Files.
+            This run wrote no summary table, as general mode runs from before stats were always on did not. Its
+            output files are under Download Output Files.
           </Alert>
         )}
-        {results.status === 'ready' && results.results && (
-          <ResultsBody results={results.results} parameters={parameters} surface={surface} />
+        {results.status === 'ready' && results.results?.mode === 'full' && (
+          <FullResultsBody results={results.results} parameters={parameters} surface={surface} />
+        )}
+        {results.status === 'ready' && results.results?.mode === 'gm' && (
+          <GmResultsBody results={results.results} parameters={parameters} samples={samples} />
         )}
       </Paper>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2}}>

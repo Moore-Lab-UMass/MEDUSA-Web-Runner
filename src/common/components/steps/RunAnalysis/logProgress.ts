@@ -7,6 +7,9 @@ const MILESTONES = [
   { marker: 'Started MEDUSA', progress: 35, message: 'Starting MEDUSA' },
   { marker: 'Mapping empiric guide-level', progress: 40, message: 'Mapping guide-level fold changes to rates' },
   { marker: 'Collapsing relative rates', progress: 45, message: 'Collapsing guides to gene level' },
+  // General mode only, in place of the p-values.
+  { marker: 'z-scoring rates to nontargetings', progress: 55, message: 'Z-scoring rates against the controls' },
+  { marker: 'Functionally classifying genes', progress: 70, message: 'Classifying genes across the simulations' },
   { marker: 'Calculating empiric pvalues', progress: 70, message: 'Calculating p-values' },
   { marker: 'Making plots', progress: 88, message: 'Making plots' },
   { marker: 'Done!', progress: 95, message: 'Analysis finished' },

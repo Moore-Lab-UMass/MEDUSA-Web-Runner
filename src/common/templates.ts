@@ -1,7 +1,8 @@
-import { FormValues, UploadedFile } from '@/types';
+import { FormValues, RunMode, UploadedFile } from '@/types';
 import { validateCsvFile } from './components/steps/UploadFiles/validateCsv';
 
-export type TemplateMode = 'full' | 'gm';
+// There is a template for each mode, and loading one sets the mode.
+export type TemplateMode = RunMode;
 
 // Both templates share the same sample data; only the parameters differ. Drop the real files in
 // public/templates/ with these exact names once they're available.
@@ -10,26 +11,15 @@ const TEMPLATE_FILES = {
   unt: { path: '/templates/sample-unt.csv', name: 'sample-unt.csv' },
 };
 
+// The sample is triptolide (TRP) at 1uM on U2OS cells for 32 hours, with the parameters of
+// MEDUSA's own example runs: every rate known for the fully parameterized one, and only NPG and
+// the effective dose for GM.
 export function templateFormValues(mode: TemplateMode, base: FormValues): FormValues {
+  const shared = { ...base, mode, npg: '0.03704', t_end_unt: '32', t_end_tr: '32' };
   if (mode === 'full') {
-    return {
-      ...base,
-      npg: '0.03704',
-      t_end_unt: '32',
-      t_end_tr: '32',
-      grdrug1: '0.03704',
-      do_val: '4',
-      grdrug2: '0',
-      drdrug: '0.01786',
-    };
+    return { ...shared, grdrug1: '0.03704', do_val: '4', grdrug2: '0', drdrug: '0.01786' };
   }
-  return {
-    ...base,
-    npg: '0.0231',
-    t_end_unt: '120',
-    t_end_tr: '120',
-    ed: '0.5',
-  };
+  return { ...shared, ed: '0.2436' };
 }
 
 async function fetchTemplateFile(path: string, name: string): Promise<UploadedFile> {

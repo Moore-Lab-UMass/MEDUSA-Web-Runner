@@ -9,7 +9,8 @@ import GeneTooltip from './GeneTooltip';
 import PointLegend from './PointLegend';
 import SurfaceLegend from './SurfaceLegend';
 import { genePoints, pointsWithin, sortedL2fcs } from './genePoints';
-import { SURFACE_COLORS, surfaceColorRange } from './surfaceScale';
+import { SURFACE_COLORS } from '../plotColors';
+import { surfaceColorRange } from './surfaceScale';
 
 // ScatterPlot keeps 90px of each dimension for its axes (20 + 70 either way).
 const PLOT_MARGIN = 90;
