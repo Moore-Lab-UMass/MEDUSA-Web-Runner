@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useReducer, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import StepLayout from './StepLayout';
 import UploadFiles from './steps/UploadFiles/UploadFiles';
@@ -8,81 +8,131 @@ import { validateCsvFile } from './steps/UploadFiles/validateCsv';
 import { createRun, getRun, startRun, uploadFile } from '@/common/medusaApi';
 import { buildParameters } from '@/common/parameters';
 import { addRunTiming, beginRunTimings } from '@/common/runTimings';
+import { loadTemplateFiles, templateFormValues, TemplateMode } from '@/common/templates';
 import { FormErrors, FormValues, SubmitState, UploadedFile } from '@/types';
 
 const DEFAULT_FORM: FormValues = {
-  npg: '0.0231',
-  t_end_unt: '120',
-  t_end_tr: '120',
-  t_start: '0',
+  npg: '',
+  t_end_unt: '',
+  t_end_tr: '',
+  // Blank leaves the optional parameters to MEDUSA's defaults.
+  t_start: '',
   ed: '',
   grdrug1: '',
   do_val: '',
   grdrug2: '',
   drdrug: '',
-  ed_err: '0.02',
-  sim_perm: '10',
-  num_iter: '1000',
+  ed_err: '',
+  sim_perm: '',
+  // Blank leaves it to MEDUSA's 1000 when fully parameterized, and to the finest that fits in
+  // general mode.
+  num_iter: '',
   gene_level: 'median',
   nont_id: 'NONT',
   max_guides_nont: '',
-  bootstraps: '1000000',
-  stats: true,
-  plot: true,
+  bootstraps: '',
 };
 
-// TEMP: fully parameterized test run, filled in by the "Load test parameters" button.
-const TEST_FORM: FormValues = {
-  ...DEFAULT_FORM,
-  npg: '0.03704',
-  t_end_unt: '32',
-  t_end_tr: '32',
-  grdrug1: '0.03704',
-  do_val: '4',
-  grdrug2: '0',
-  drdrug: '0.01786',
+// What the two steps collect: the files, the parameters, and which step is showing.
+type Setup = {
+  step: 1 | 2;
+  trtFile: UploadedFile | null;
+  untFile: UploadedFile | null;
+  formValues: FormValues;
+  formErrors: FormErrors;
+  // Whether Set Parameters' Optional / Advanced section is open. Loading a template opens it, as
+  // the template fills in fields there.
+  showAdvanced: boolean;
 };
+
+type SetupAction =
+  | { type: 'goTo'; step: 1 | 2 }
+  | { type: 'setFile'; which: 'trt' | 'unt'; file: UploadedFile | null }
+  | { type: 'editForm'; field: keyof FormValues; value: string }
+  | { type: 'showAdvanced'; open: boolean }
+  | { type: 'fillTemplate'; values: FormValues }
+  | { type: 'rejectForm'; errors: FormErrors }
+  | { type: 'loadTemplate'; trt: UploadedFile; unt: UploadedFile; values: FormValues };
+
+const INITIAL_SETUP: Setup = {
+  step: 1,
+  trtFile: null,
+  untFile: null,
+  formValues: DEFAULT_FORM,
+  formErrors: {},
+  showAdvanced: false,
+};
+
+// Any change to the parameters clears their errors: the ED / drug-parameter rule spans several
+// fields, so one edit can resolve errors on others.
+function setupReducer(state: Setup, action: SetupAction): Setup {
+  switch (action.type) {
+    case 'goTo':
+      return { ...state, step: action.step };
+    case 'setFile':
+      return action.which === 'trt'
+        ? { ...state, trtFile: action.file }
+        : { ...state, untFile: action.file };
+    case 'editForm':
+      return { ...state, formValues: { ...state.formValues, [action.field]: action.value }, formErrors: {} };
+    case 'showAdvanced':
+      return { ...state, showAdvanced: action.open };
+    case 'fillTemplate':
+      return { ...state, formValues: action.values, formErrors: {}, showAdvanced: true };
+    case 'rejectForm':
+      return { ...state, formErrors: action.errors };
+    case 'loadTemplate':
+      return {
+        step: 2,
+        trtFile: action.trt,
+        untFile: action.unt,
+        formValues: action.values,
+        formErrors: {},
+        showAdvanced: true,
+      };
+  }
+}
 
 export default function MedusaApp() {
   const router = useRouter();
-  const [step, setStep] = useState<1 | 2>(1);
-  const [trtFile, setTrtFile] = useState<UploadedFile | null>(null);
-  const [untFile, setUntFile] = useState<UploadedFile | null>(null);
-  const [formValues, setFormValues] = useState<FormValues>(DEFAULT_FORM);
-  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [{ step, trtFile, untFile, formValues, formErrors, showAdvanced }, dispatch] = useReducer(
+    setupReducer,
+    INITIAL_SETUP,
+  );
   const [submit, setSubmit] = useState<SubmitState>({ phase: 'idle' });
+  const [template, setTemplate] = useState<{ loading: TemplateMode | null; error: string | null }>({
+    loading: null,
+    error: null,
+  });
+  const setStep = (to: 1 | 2) => dispatch({ type: 'goTo', step: to });
 
-  const handleFormChange = (field: keyof FormValues, value: string | boolean) => {
-    setFormValues((prev) => ({ ...prev, [field]: value }));
-    // The ED / drug-parameter rule spans several fields, so one edit can resolve errors on others.
-    setFormErrors({});
-  };
+  const handleFormChange = (field: keyof FormValues, value: string) =>
+    dispatch({ type: 'editForm', field, value });
 
-  // TEMP
-  const handleLoadTestParameters = () => {
-    setFormValues(TEST_FORM);
-    setFormErrors({});
-  };
+  // Either template's parameters, keeping the files already uploaded.
+  const handleLoadTemplateParameters = (mode: TemplateMode) =>
+    dispatch({ type: 'fillTemplate', values: templateFormValues(mode, DEFAULT_FORM) });
 
   const handleFileDrop = async (type: 'trt' | 'unt', file: File) => {
     const sizeMB = (file.size / 1024 / 1024).toFixed(1) + ' MB';
     const error = await validateCsvFile(file);
-    const uploaded: UploadedFile = { file, name: file.name, sizeMB, error };
-    if (type === 'trt') setTrtFile(uploaded);
-    else setUntFile(uploaded);
+    dispatch({ type: 'setFile', which: type, file: { file, name: file.name, sizeMB, error } });
   };
 
-  const handleFileRemove = (type: 'trt' | 'unt') => {
-    if (type === 'trt') setTrtFile(null);
-    else setUntFile(null);
-  };
+  const handleFileRemove = (type: 'trt' | 'unt') => dispatch({ type: 'setFile', which: type, file: null });
 
-  const handleRunSimulation = async () => {
-    if (!trtFile || !untFile) return;
+  // Explicit args let the template flow run immediately on freshly fetched files/values instead
+  // of waiting on state updates to land; the "Run MEDUSA" button relies on the state defaults.
+  const handleRunSimulation = async (
+    trt: UploadedFile | null = trtFile,
+    unt: UploadedFile | null = untFile,
+    values: FormValues = formValues,
+  ) => {
+    if (!trt || !unt) return;
 
-    const { parameters, errors } = buildParameters(formValues);
+    const { parameters, errors } = buildParameters(values);
     if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
+      dispatch({ type: 'rejectForm', errors });
       return;
     }
 
@@ -97,12 +147,12 @@ export default function MedusaApp() {
     let runId: string | undefined;
     try {
       setSubmit({ phase: 'creating' });
-      const created = await createRun({ file1: trtFile.file, file2: untFile.file }, parameters);
+      const created = await createRun({ file1: trt.file, file2: unt.file }, parameters);
       runId = created.runId;
 
       // The two files upload in parallel; report them as one bar weighted by size.
       const loaded = { file1: 0, file2: 0 };
-      const total = trtFile.file.size + untFile.file.size;
+      const total = trt.file.size + unt.file.size;
       const report = (key: 'file1' | 'file2', size: number) => (fraction: number) => {
         loaded[key] = fraction * size;
         setSubmit({ phase: 'uploading', progress: Math.round(((loaded.file1 + loaded.file2) / total) * 100) });
@@ -112,12 +162,12 @@ export default function MedusaApp() {
         'Both uploads, in parallel, wall clock',
         Promise.all([
           timed(
-            `Upload file1 (${trtFile.sizeMB})`,
-            uploadFile(created.uploads.file1, trtFile.file, report('file1', trtFile.file.size)),
+            `Upload file1 (${trt.sizeMB})`,
+            uploadFile(created.uploads.file1, trt.file, report('file1', trt.file.size)),
           ),
           timed(
-            `Upload file2 (${untFile.sizeMB})`,
-            uploadFile(created.uploads.file2, untFile.file, report('file2', untFile.file.size)),
+            `Upload file2 (${unt.sizeMB})`,
+            uploadFile(created.uploads.file2, unt.file, report('file2', unt.file.size)),
           ),
         ]),
       );
@@ -144,6 +194,20 @@ export default function MedusaApp() {
     }
   };
 
+  const handleUseTemplate = async (mode: TemplateMode) => {
+    setTemplate({ loading: mode, error: null });
+    try {
+      const { trt, unt } = await loadTemplateFiles();
+      const values = templateFormValues(mode, DEFAULT_FORM);
+      dispatch({ type: 'loadTemplate', trt, unt, values });
+      setTemplate({ loading: null, error: null });
+      // Either template runs straight away on the sample, in the model picked.
+      await handleRunSimulation(trt, unt, values);
+    } catch (error) {
+      setTemplate({ loading: null, error: error instanceof Error ? error.message : 'Could not load the template.' });
+    }
+  };
+
   // The stepper follows the Back and Next buttons: no going back mid-submit, no going on without
   // two valid files. Running and results belong to a run, which this page has yet to make.
   const filesReady = !!trtFile && !!untFile && !trtFile.error && !untFile.error;
@@ -161,6 +225,9 @@ export default function MedusaApp() {
           onFileDrop={handleFileDrop}
           onFileRemove={handleFileRemove}
           onNext={() => setStep(2)}
+          templateLoading={template.loading}
+          templateError={template.error}
+          onUseTemplate={handleUseTemplate}
         />
       )}
       {step === 2 && (
@@ -171,9 +238,11 @@ export default function MedusaApp() {
           formErrors={formErrors}
           submit={submit}
           onFormChange={handleFormChange}
-          onLoadTestParameters={handleLoadTestParameters}
+          showAdvanced={showAdvanced}
+          onShowAdvancedChange={(open) => dispatch({ type: 'showAdvanced', open })}
+          onLoadTemplateParameters={handleLoadTemplateParameters}
           onBack={() => setStep(1)}
-          onNext={handleRunSimulation}
+          onNext={() => handleRunSimulation()}
         />
       )}
     </StepLayout>

@@ -115,7 +115,7 @@ export default function UploadCard({
             border: '1.5px dashed',
             borderColor: dragging ? 'primary.main' : '#c9ccd1',
             borderRadius: 1.5,
-            minHeight: { xs: 220, sm: 400 },
+            minHeight: { xs: 220, sm: 350 },
             px: 2,
             bgcolor: dragging ? '#eef3ee' : '#fff',
             cursor: 'pointer',

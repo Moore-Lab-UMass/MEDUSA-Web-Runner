@@ -12,8 +12,10 @@ const STATUS_LABELS: Record<RunStatus, string> = {
   CANCELLED: 'Cancelled',
 };
 
-export default function JobHeader({ status }: { status: RunStatus | null }) {
-  const active = status === null || status === 'QUEUED' || status === 'RUNNING';
+// `abandoned` marks a run whose worker stopped without recording it, so it is shown as stopped
+// rather than as running.
+export default function JobHeader({ status, abandoned = false }: { status: RunStatus | null; abandoned?: boolean }) {
+  const active = !abandoned && (status === null || status === 'QUEUED' || status === 'RUNNING');
 
   return (
     <Box>
@@ -31,7 +33,9 @@ export default function JobHeader({ status }: { status: RunStatus | null }) {
           }}
         >
           {active && <CircularProgress size={12} thickness={6} />}
-          <Typography sx={{ fontSize: 12, color: '#555' }}>{status ? STATUS_LABELS[status] : 'Loading'}</Typography>
+          <Typography sx={{ fontSize: 12, color: '#555' }}>
+            {abandoned ? 'Stopped' : status ? STATUS_LABELS[status] : 'Loading'}
+          </Typography>
         </Box>
       </Box>
       {active && (

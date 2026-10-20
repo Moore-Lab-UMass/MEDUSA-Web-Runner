@@ -1,3 +1,5 @@
+// The run mode isn't a field: like MEDUSA, the form works it out from the drug parameters given
+// (see formMode in src/common/parameters.ts).
 export interface FormValues {
   npg: string;
   t_end_unt: string;
@@ -15,8 +17,6 @@ export interface FormValues {
   nont_id: string;
   max_guides_nont: string;
   bootstraps: string;
-  stats: boolean;
-  plot: boolean;
 }
 
 export type FormErrors = Partial<Record<keyof FormValues, string>>;
@@ -30,7 +30,7 @@ export interface UploadedFile {
 
 export type Step = 1 | 2 | 3 | 4;
 
-// Where a submission is between "Run Simulation" and landing on the run page.
+// Where a submission is between "Run MEDUSA" and landing on the run page.
 export type SubmitState =
   | { phase: 'idle'; error?: string }
   | { phase: 'creating' }
@@ -62,7 +62,7 @@ export interface RunParameters {
   nont_id?: string;
 }
 
-// "full" supplies all four drug parameters; anything less is GM and requires ED.
+// "full" supplies all four drug parameters; GM leaves at least one out and requires ED instead.
 export type RunMode = 'full' | 'gm';
 
 export type RunStatus = 'CREATED' | 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'FAILED' | 'CANCELLED';

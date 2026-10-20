@@ -11,14 +11,18 @@ import Results from './steps/Results/Results';
 import { useRun } from '@/common/hooks/useRun';
 import { isTerminal } from '@/common/medusaApi';
 import { useRunResults } from '@/common/hooks/useRunResults';
+import { useDeathSamples } from '@/common/hooks/useDeathSamples';
 import { simulateSurface } from '@/common/phaseSurface';
 
 export default function RunPage({ runId }: { runId: string }) {
   const router = useRouter();
-  const { run, parameters, initialStatus, logs, error, connectionLost } = useRun(runId);
+  const { run, parameters, initialStatus, logs, error, connectionLost, abandoned } = useRun(runId);
   const succeeded = run?.status === 'SUCCEEDED';
   // Loaded here rather than in Results so the parsed CSV survives switching back to the log.
   const results = useRunResults(runId, parameters, succeeded);
+  // A GM run's histograms, from a file that can be far larger than the summary, so loaded apart
+  // from it: the table is up while these are still arriving.
+  const samples = useDeathSamples(runId, parameters, succeeded);
   // The phase diagram's background needs only the parameters, so it is worked out as soon as they
   // arrive, while the run is still going, and is there when the genes are.
   const surface = useMemo(() => (parameters ? simulateSurface(parameters) : null), [parameters]);
@@ -62,6 +66,7 @@ export default function RunPage({ runId }: { runId: string }) {
           parameters={parameters}
           results={results}
           surface={surface}
+          samples={samples}
           onBack={() => setView('run')}
           onNewAnalysis={handleNewAnalysis}
         />
@@ -73,6 +78,7 @@ export default function RunPage({ runId }: { runId: string }) {
           logs={logs}
           animateLog={initialStatus !== null && !isTerminal(initialStatus)}
           connectionLost={connectionLost}
+          abandoned={abandoned}
           onNewAnalysis={handleNewAnalysis}
           onViewResults={() => setView('results')}
         />

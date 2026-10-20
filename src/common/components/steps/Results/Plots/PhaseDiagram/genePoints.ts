@@ -1,28 +1,25 @@
 import { Point } from '@weng-lab/visualization';
-import { PhaseSurface, surfaceAt } from '@/common/phaseSurface';
+import { PhaseSurface } from '@/common/phaseSurface';
 import { FullGeneRow } from '@/common/results';
+import { PLOT_COLORS } from '../plotColors';
+
+// The kinds of point on the plot, in the legend's order. Each is a chip that can be switched off.
+export const POINT_KINDS = [
+  { kind: 'hits', label: 'Top hits', color: PLOT_COLORS.highlight },
+  { kind: 'controls', label: 'Non-targeting controls', color: PLOT_COLORS.control },
+  { kind: 'other', label: 'Other genes', color: PLOT_COLORS.background },
+] as const;
+export type PointKind = (typeof POINT_KINDS)[number]['kind'];
 
 export type GeneMetadata = {
   gene: string;
   group: 'Anti-Death' | 'Pro-Death' | 'Selected' | 'Control' | 'Gene';
-  // The surface's L2FC TRvUT where the gene sits. Null without a surface, or off its grid.
+  kind: PointKind;
+  // The surface's L2FC TRvUT where the gene sits. Null without a surface, or where it has none.
   l2fc: number | null;
 };
 
 export type GenePoint = Point<GeneMetadata>;
-
-// The white ring keeps the hits legible where the surface is darkest.
-const HIT_COLOR = '#5b3fa8';
-const HIT_STROKE = '#ffffff';
-const CONTROL_COLOR = '#4b5563';
-const BACKGROUND_COLOR = '#9aa1a9';
-
-// The kinds of point on the plot, as its legend names them.
-export const POINT_KINDS = [
-  { label: 'Top hits', color: HIT_COLOR },
-  { label: 'Non-targeting controls', color: CONTROL_COLOR },
-  { label: 'Other genes', color: BACKGROUND_COLOR },
-];
 
 // Which genes are highlighted, and as what: the run's gene_list where it has one, and its top
 // hits otherwise.
@@ -59,19 +56,35 @@ export function genePoints(
   for (const { gene, control, log2Growth, log2Death } of genes) {
     const group = groups.get(gene);
     const point = { x: log2Growth, y: log2Death };
-    const value = surface ? surfaceAt(surface, log2Growth, log2Death) : NaN;
+    const value = surface ? surface.l2fcAt(log2Growth, log2Death) : NaN;
     const l2fc = Number.isFinite(value) ? value : null;
     if (group) {
-      const metaData = { gene, group, l2fc };
-      hits.push({ ...point, color: HIT_COLOR, stroke: HIT_STROKE, r: 5, label: gene, metaData });
+      const metaData = { gene, group, kind: 'hits' as const, l2fc };
+      hits.push({ ...point, color: PLOT_COLORS.highlight, stroke: PLOT_COLORS.highlightRing, r: 5, label: gene, metaData });
     } else if (control) {
-      controls.push({ ...point, color: CONTROL_COLOR, metaData: { gene, group: 'Control', l2fc } });
+      controls.push({ ...point, color: PLOT_COLORS.control, metaData: { gene, group: 'Control', kind: 'controls', l2fc } });
     } else {
-      background.push({ ...point, color: BACKGROUND_COLOR, metaData: { gene, group: 'Gene', l2fc } });
+      background.push({ ...point, color: PLOT_COLORS.background, metaData: { gene, group: 'Gene', kind: 'other', l2fc } });
     }
   }
   // Later points draw on top: controls over the cloud, hits over both.
   return [...background, ...controls, ...hits];
+}
+
+// The points with the kinds switched off in the legend dimmed, and their labels dropped, so they
+// stay in place behind the rest without the plot's domains moving.
+export function withHidden(points: GenePoint[], hidden: ReadonlySet<string>): GenePoint[] {
+  if (hidden.size === 0) return points;
+  return points.map((point) =>
+    point.metaData && hidden.has(point.metaData.kind) ? { ...point, dimmed: true, label: undefined } : point,
+  );
+}
+
+// How many points there are of each kind.
+export function kindCounts(points: GenePoint[]): Record<PointKind, number> {
+  const counts: Record<PointKind, number> = { hits: 0, controls: 0, other: 0 };
+  for (const { metaData } of points) if (metaData) counts[metaData.kind] += 1;
+  return counts;
 }
 
 // Every point's L2FC, sorted: what the colorbar's histogram counts.
