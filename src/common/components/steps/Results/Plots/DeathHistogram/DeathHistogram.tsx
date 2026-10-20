@@ -5,6 +5,7 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import { ChipLegend, Histogram, HistogramBin, HistogramSeries } from '@weng-lab/visualization';
+import { DeathSamples } from '@/common/deathSamples';
 import { DeathSamplesState } from '@/common/hooks/useDeathSamples';
 import { GmGeneRow } from '@/common/results';
 import PlotFrame from '../PlotFrame';
@@ -23,6 +24,9 @@ type SeriesKey = (typeof SERIES)[number]['key'];
 
 // How faint the other series goes while one is highlighted from the legend.
 const FADED_OPACITY = 0.15;
+
+// For a gene with no samples, kept the same array so the series aren't rebuilt every render.
+const NO_SAMPLES: number[] = [];
 
 // A hovered bar: in the overlay layout, its bin's series holds just the bar's own series.
 function BarTooltip({ bin }: { bin: HistogramBin }) {
@@ -50,19 +54,8 @@ function BarTooltip({ bin }: { bin: HistogramBin }) {
   );
 }
 
-interface Props {
-  gene: GmGeneRow | null;
-  samples: DeathSamplesState;
-}
-
-// A GM gene's z-scored relative death rate across the run's matching simulations, over the
-// non-targeting controls' pooled, as MEDUSA's own histograms draw it (medusa/plot_gm_hist.py,
-// ax.hist(values, density=True)): each series a density histogram of 10 numpy-style bins over its
-// own range, the gene drawn over the controls.
-export default function DeathHistogram({ gene, samples }: Props) {
-  const ready = samples.status === 'ready' ? samples.samples : null;
-  const geneSamples = gene && ready ? ready.byGene.get(gene.gene) : undefined;
-  // The legend's state: series switched off, and the one under the cursor in the legend.
+// The legend's state: series switched off, and the one under the cursor in the legend.
+function useSeriesLegend() {
   const [hidden, setHidden] = useState<ReadonlySet<string>>(() => new Set());
   const [highlighted, setHighlighted] = useState<SeriesKey | null>(null);
   const toggle = (key: string) =>
@@ -71,41 +64,32 @@ export default function DeathHistogram({ gene, samples }: Props) {
       if (!next.delete(key)) next.add(key);
       return next;
     });
+  return { hidden, highlighted, setHighlighted, toggle };
+}
 
-  // The series shown, in drawing order. The highlighted one stays as it is and the other fades.
-  const data = useMemo((): HistogramSeries[] => {
-    if (!gene || !geneSamples || !ready) return [];
-    const values = { controls: ready.controls, gene: geneSamples };
-    const labels = { controls: 'Non-targeting controls', gene: gene.gene };
-    const shown: HistogramSeries[] = [];
-    for (const { key, color, opacity } of SERIES) {
-      if (hidden.has(key)) continue;
-      shown.push({
-        values: values[key],
-        label: labels[key],
-        color,
-        opacity: highlighted && highlighted !== key ? FADED_OPACITY : opacity,
-      });
-    }
-    return shown;
-  }, [gene, geneSamples, ready, hidden, highlighted]);
+// The series shown, in drawing order. The highlighted one stays as it is and the other fades.
+function histogramSeries(
+  gene: string,
+  values: Record<SeriesKey, ArrayLike<number>>,
+  hidden: ReadonlySet<string>,
+  highlighted: SeriesKey | null,
+): HistogramSeries[] {
+  const labels = { controls: 'Non-targeting controls', gene };
+  return SERIES.filter(({ key }) => !hidden.has(key)).map(({ key, color, opacity }) => ({
+    values: values[key],
+    label: labels[key],
+    color,
+    opacity: highlighted && highlighted !== key ? FADED_OPACITY : opacity,
+  }));
+}
 
-  if (samples.status === 'loading') {
-    return (
-      <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5 }}>
-        <CircularProgress size={20} />
-        <Typography sx={{ fontSize: 13, color: '#888' }}>Loading every simulation&apos;s rates…</Typography>
-      </Box>
-    );
-  }
-  if (samples.status === 'error') {
-    return (
-      <Alert severity="error" sx={{ m: 2 }}>
-        {samples.message} The output files may still be available under Download Output Files.
-      </Alert>
-    );
-  }
-  if (!gene) return null;
+function GeneHistogram({ gene, samples }: { gene: GmGeneRow; samples: DeathSamples }) {
+  const geneSamples = samples.byGene.get(gene.gene) ?? NO_SAMPLES;
+  const { hidden, highlighted, setHighlighted, toggle } = useSeriesLegend();
+  const data = useMemo(
+    () => histogramSeries(gene.gene, { controls: samples.controls, gene: geneSamples }, hidden, highlighted),
+    [gene.gene, samples.controls, geneSamples, hidden, highlighted],
+  );
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -122,19 +106,19 @@ export default function DeathHistogram({ gene, samples }: Props) {
         <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', columnGap: 1.5, minWidth: 0 }}>
           <Typography sx={{ fontWeight: 600, fontSize: 15 }}>{gene.gene}</Typography>
           <Typography sx={{ fontSize: 12.5, color: '#888' }}>
-            {gene.deathPredict.replaceAll('_', ' ') || 'Unclassified'} · {(geneSamples?.length ?? 0).toLocaleString()}{' '}
-            of {ready?.simulations.toLocaleString()} simulations
+            {gene.deathPredict.replaceAll('_', ' ') || 'Unclassified'} · {geneSamples.length.toLocaleString()} of{' '}
+            {samples.simulations.toLocaleString()} simulations
           </Typography>
         </Box>
         <Box sx={{ ml: 'auto' }}>
           <ChipLegend
             groups={[
-              { value: 'gene', label: gene.gene, color: PLOT_COLORS.highlight, count: geneSamples?.length ?? 0 },
+              { value: 'gene', label: gene.gene, color: PLOT_COLORS.highlight, count: geneSamples.length },
               {
                 value: 'controls',
                 label: 'Non-targeting controls',
                 color: PLOT_COLORS.control,
-                count: ready?.controls.length ?? 0,
+                count: samples.controls.length,
                 tooltip: 'Every non-targeting group, pooled across the simulations',
               },
             ]}
@@ -146,7 +130,7 @@ export default function DeathHistogram({ gene, samples }: Props) {
         </Box>
       </Box>
 
-      {geneSamples && geneSamples.length > 0 ? (
+      {geneSamples.length > 0 ? (
         <PlotFrame margin={PLOT_MARGIN}>
           {({ width, height }) => (
             <Histogram
@@ -176,9 +160,38 @@ export default function DeathHistogram({ gene, samples }: Props) {
       )}
 
       <Typography sx={{ fontSize: 12, color: '#888' }}>
-        {ready && ready.dropped > 0 &&
-          ` ${ready.dropped.toLocaleString()} ${ready.dropped === 1 ? 'sample was' : 'samples were'} left out for an undefined z-score.`}
+        {samples.dropped > 0 &&
+          ` ${samples.dropped.toLocaleString()} ${samples.dropped === 1 ? 'sample was' : 'samples were'} left out for an undefined z-score.`}
       </Typography>
     </Box>
   );
+}
+
+interface Props {
+  gene: GmGeneRow | null;
+  samples: DeathSamplesState;
+}
+
+// A GM gene's z-scored relative death rate across the run's matching simulations, over the
+// non-targeting controls' pooled, as MEDUSA's own histograms draw it (medusa/plot_gm_hist.py,
+// ax.hist(values, density=True)): each series a density histogram of 10 numpy-style bins over its
+// own range, the gene drawn over the controls.
+export default function DeathHistogram({ gene, samples }: Props) {
+  if (samples.status === 'loading') {
+    return (
+      <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5 }}>
+        <CircularProgress size={20} />
+        <Typography sx={{ fontSize: 13, color: '#888' }}>Loading every simulation&apos;s rates…</Typography>
+      </Box>
+    );
+  }
+  if (samples.status === 'error') {
+    return (
+      <Alert severity="error" sx={{ m: 2 }}>
+        {samples.message} The output files may still be available under Download Output Files.
+      </Alert>
+    );
+  }
+  if (!gene) return null;
+  return <GeneHistogram gene={gene} samples={samples.samples} />;
 }
