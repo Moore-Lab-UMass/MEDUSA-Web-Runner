@@ -3228,9 +3228,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@weng-lab/visualization@npm:3.0.0":
-  version: 3.0.0
-  resolution: "@weng-lab/visualization@npm:3.0.0"
+"@weng-lab/visualization@npm:3.2.0":
+  version: 3.2.0
+  resolution: "@weng-lab/visualization@npm:3.2.0"
   dependencies:
     "@types/d3-hierarchy": "npm:^3.1.7"
     "@types/d3-shape": "npm:^3.1.8"
@@ -3253,7 +3253,7 @@ __metadata:
     "@visx/visx": ^4.0.0
     react: ^19.1.0
     react-dom: ^19.1.0
-  checksum: 10c0/5505caab5ca69be8cf9ab01890468f0b0751d64cf6b889340d287327d076346460475440b8067c20c08637961eda2dbf0f983793de45ebe72c8c57eaf3120096
+  checksum: 10c0/de46f6221ecc920048b23326e71482efa2e7aea6d20eef83c7bfd9d859accda00899e6e688aa90bf9a4889f35f623ac4a546bfda9552cbbb032d6745dbe9e74b
   languageName: node
   linkType: hard
 
@@ -6120,7 +6120,7 @@ __metadata:
     "@types/react-dom": "npm:^19"
     "@visx/visx": "npm:^4.0.0"
     "@weng-lab/ui-components": "npm:4.0.0"
-    "@weng-lab/visualization": "npm:3.0.0"
+    "@weng-lab/visualization": "npm:3.2.0"
     eslint: "npm:^9"
     eslint-config-next: "npm:16.2.10"
     next: "npm:16.2.10"
