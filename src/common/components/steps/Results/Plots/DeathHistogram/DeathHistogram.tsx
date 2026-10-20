@@ -150,6 +150,8 @@ export default function DeathHistogram({ gene, samples }: Props) {
         <PlotFrame margin={PLOT_MARGIN}>
           {({ width, height }) => (
             <Histogram
+              // The bars only animate in as they mount, so a new gene mounts a new plot to replay it.
+              key={gene.gene}
               width={width}
               height={height}
               data={data}
@@ -174,8 +176,6 @@ export default function DeathHistogram({ gene, samples }: Props) {
       )}
 
       <Typography sx={{ fontSize: 12, color: '#888' }}>
-        Each series is binned over its own range and scaled to an area of 1 (count ÷ samples ÷ bin width), so a
-        gene whose simulations agree closely stands tall and narrow against the controls.
         {ready && ready.dropped > 0 &&
           ` ${ready.dropped.toLocaleString()} ${ready.dropped === 1 ? 'sample was' : 'samples were'} left out for an undefined z-score.`}
       </Typography>

@@ -9,6 +9,8 @@ import Paper from '@mui/material/Paper';
 import DownloadIcon from '@mui/icons-material/Download';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import ArrowBackIcon from '@mui/icons-material/KeyboardArrowLeft';
+import ScatterPlotIcon from '@mui/icons-material/ScatterPlot';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import { TwoPaneLayout, TwoPanePlotConfig } from '@weng-lab/ui-components';
 import { DeathSamplesState } from '@/common/hooks/useDeathSamples';
 import { RunResultsState } from '@/common/hooks/useRunResults';
@@ -98,7 +100,8 @@ function ResultsLayout({ results, table, plots }: LayoutProps) {
             direction={{ xs: 'column', lg: 'row' }}
             rowHeight="100cqh"
             columnHeight="100cqh"
-            // The plot tabs have no icons, so their labels have to stay up when the panes stack.
+            // Each model has just one plot tab, so there is room for its label beside its icon even
+            // when the panes stack.
             showTabLabels
           />
         </Box>
@@ -152,6 +155,7 @@ function FullResultsBody({ results, parameters, surface }: FullBodyProps) {
   const plots = [
     {
       tabTitle: 'Phase Diagram',
+      icon: <ScatterPlotIcon />,
       plotComponent: (
         <PhaseDiagram
           genes={results.rows}
@@ -210,7 +214,11 @@ function GmResultsBody({ results, parameters, samples }: GmBodyProps) {
     />
   );
   const plots = [
-    { tabTitle: 'Histogram', plotComponent: <DeathHistogram gene={selected} samples={samples} /> },
+    {
+      tabTitle: 'Histogram',
+      icon: <BarChartIcon />,
+      plotComponent: <DeathHistogram gene={selected} samples={samples} />,
+    },
   ];
   return <ResultsLayout results={results} table={table} plots={plots} />;
 }
