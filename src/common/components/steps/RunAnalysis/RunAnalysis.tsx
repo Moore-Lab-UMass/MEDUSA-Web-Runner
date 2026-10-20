@@ -75,7 +75,7 @@ export default function RunAnalysis({
         {abandoned && (
           <Alert severity="error" sx={{ mt: 2 }}>
             This run stopped without finishing. MEDUSA&apos;s worker has 30 minutes and 1 GiB of memory, and is
-            stopped outright past either, before it can report the failure. General mode runs with many matching
+            stopped outright past either, before it can report the failure. General model (GM) runs with many matching
             simulations are the usual cause: start a new analysis with a narrower search.
           </Alert>
         )}

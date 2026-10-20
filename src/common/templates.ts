@@ -1,7 +1,8 @@
 import { FormValues, RunMode, UploadedFile } from '@/types';
+import { MEDUSA_DEFAULTS } from './parameters';
 import { validateCsvFile } from './components/steps/UploadFiles/validateCsv';
 
-// There is a template for each mode, and loading one sets the mode.
+// There is a template for each mode, whose parameters run in it.
 export type TemplateMode = RunMode;
 
 // Both templates share the same sample data; only the parameters differ. Drop the real files in
@@ -13,13 +14,14 @@ const TEMPLATE_FILES = {
 
 // The sample is triptolide (TRP) at 1uM on U2OS cells for 32 hours, with the parameters of
 // MEDUSA's own example runs: every rate known for the fully parameterized one, and only NPG and
-// the effective dose for GM.
+// the effective dose for GM. The optional parameters are filled in with MEDUSA's defaults, except
+// num_iter in GM, where a blank one is picked to fit the worker.
 export function templateFormValues(mode: TemplateMode, base: FormValues): FormValues {
-  const shared = { ...base, mode, npg: '0.03704', t_end_unt: '32', t_end_tr: '32' };
+  const shared = { ...base, ...MEDUSA_DEFAULTS, npg: '0.03704', t_end_unt: '32', t_end_tr: '32' };
   if (mode === 'full') {
     return { ...shared, grdrug1: '0.03704', do_val: '4', grdrug2: '0', drdrug: '0.01786' };
   }
-  return { ...shared, ed: '0.2436' };
+  return { ...shared, num_iter: '', ed: '0.2436' };
 }
 
 async function fetchTemplateFile(path: string, name: string): Promise<UploadedFile> {

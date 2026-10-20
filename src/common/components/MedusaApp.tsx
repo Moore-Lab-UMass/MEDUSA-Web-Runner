@@ -12,25 +12,25 @@ import { loadTemplateFiles, templateFormValues, TemplateMode } from '@/common/te
 import { FormErrors, FormValues, SubmitState, UploadedFile } from '@/types';
 
 const DEFAULT_FORM: FormValues = {
-  mode: 'full',
-  npg: '0.0231',
-  t_end_unt: '120',
-  t_end_tr: '120',
-  t_start: '0',
+  npg: '',
+  t_end_unt: '',
+  t_end_tr: '',
+  // Blank leaves the optional parameters to MEDUSA's defaults.
+  t_start: '',
   ed: '',
   grdrug1: '',
   do_val: '',
   grdrug2: '',
   drdrug: '',
-  ed_err: '0.02',
-  sim_perm: '10',
+  ed_err: '',
+  sim_perm: '',
   // Blank leaves it to MEDUSA's 1000 when fully parameterized, and to the finest that fits in
   // general mode.
   num_iter: '',
   gene_level: 'median',
   nont_id: 'NONT',
   max_guides_nont: '',
-  bootstraps: '1000000',
+  bootstraps: '',
 };
 
 // What the two steps collect: the files, the parameters, and which step is showing.
@@ -40,15 +40,17 @@ type Setup = {
   untFile: UploadedFile | null;
   formValues: FormValues;
   formErrors: FormErrors;
-  // A template's files are for its mode, so it fixes the mode until a file is changed.
-  modeLocked: boolean;
+  // Whether Set Parameters' Optional / Advanced section is open. Loading a template opens it, as
+  // the template fills in fields there.
+  showAdvanced: boolean;
 };
 
 type SetupAction =
   | { type: 'goTo'; step: 1 | 2 }
   | { type: 'setFile'; which: 'trt' | 'unt'; file: UploadedFile | null }
   | { type: 'editForm'; field: keyof FormValues; value: string }
-  | { type: 'fillForm'; values: FormValues }
+  | { type: 'showAdvanced'; open: boolean }
+  | { type: 'fillTemplate'; values: FormValues }
   | { type: 'rejectForm'; errors: FormErrors }
   | { type: 'loadTemplate'; trt: UploadedFile; unt: UploadedFile; values: FormValues };
 
@@ -58,7 +60,7 @@ const INITIAL_SETUP: Setup = {
   untFile: null,
   formValues: DEFAULT_FORM,
   formErrors: {},
-  modeLocked: false,
+  showAdvanced: false,
 };
 
 // Any change to the parameters clears their errors: the ED / drug-parameter rule spans several
@@ -69,12 +71,14 @@ function setupReducer(state: Setup, action: SetupAction): Setup {
       return { ...state, step: action.step };
     case 'setFile':
       return action.which === 'trt'
-        ? { ...state, trtFile: action.file, modeLocked: false }
-        : { ...state, untFile: action.file, modeLocked: false };
+        ? { ...state, trtFile: action.file }
+        : { ...state, untFile: action.file };
     case 'editForm':
       return { ...state, formValues: { ...state.formValues, [action.field]: action.value }, formErrors: {} };
-    case 'fillForm':
-      return { ...state, formValues: action.values, formErrors: {} };
+    case 'showAdvanced':
+      return { ...state, showAdvanced: action.open };
+    case 'fillTemplate':
+      return { ...state, formValues: action.values, formErrors: {}, showAdvanced: true };
     case 'rejectForm':
       return { ...state, formErrors: action.errors };
     case 'loadTemplate':
@@ -84,14 +88,14 @@ function setupReducer(state: Setup, action: SetupAction): Setup {
         untFile: action.unt,
         formValues: action.values,
         formErrors: {},
-        modeLocked: true,
+        showAdvanced: true,
       };
   }
 }
 
 export default function MedusaApp() {
   const router = useRouter();
-  const [{ step, trtFile, untFile, formValues, formErrors, modeLocked }, dispatch] = useReducer(
+  const [{ step, trtFile, untFile, formValues, formErrors, showAdvanced }, dispatch] = useReducer(
     setupReducer,
     INITIAL_SETUP,
   );
@@ -105,9 +109,9 @@ export default function MedusaApp() {
   const handleFormChange = (field: keyof FormValues, value: string) =>
     dispatch({ type: 'editForm', field, value });
 
-  // TEMP: the sample parameters for whichever mode is picked.
-  const handleLoadTestParameters = () =>
-    dispatch({ type: 'fillForm', values: templateFormValues(formValues.mode, DEFAULT_FORM) });
+  // Either template's parameters, keeping the files already uploaded.
+  const handleLoadTemplateParameters = (mode: TemplateMode) =>
+    dispatch({ type: 'fillTemplate', values: templateFormValues(mode, DEFAULT_FORM) });
 
   const handleFileDrop = async (type: 'trt' | 'unt', file: File) => {
     const sizeMB = (file.size / 1024 / 1024).toFixed(1) + ' MB';
@@ -118,7 +122,7 @@ export default function MedusaApp() {
   const handleFileRemove = (type: 'trt' | 'unt') => dispatch({ type: 'setFile', which: type, file: null });
 
   // Explicit args let the template flow run immediately on freshly fetched files/values instead
-  // of waiting on state updates to land; the "Run Simulation" button relies on the state defaults.
+  // of waiting on state updates to land; the "Run MEDUSA" button relies on the state defaults.
   const handleRunSimulation = async (
     trt: UploadedFile | null = trtFile,
     unt: UploadedFile | null = untFile,
@@ -197,9 +201,8 @@ export default function MedusaApp() {
       const values = templateFormValues(mode, DEFAULT_FORM);
       dispatch({ type: 'loadTemplate', trt, unt, values });
       setTemplate({ loading: null, error: null });
-      // Fully parameterized mode is the "just show me" demo; general mode lands on Set
-      // Parameters so the sample ED value is visible before the user runs it.
-      if (mode === 'full') await handleRunSimulation(trt, unt, values);
+      // Either template runs straight away on the sample, in the model picked.
+      await handleRunSimulation(trt, unt, values);
     } catch (error) {
       setTemplate({ loading: null, error: error instanceof Error ? error.message : 'Could not load the template.' });
     }
@@ -233,10 +236,11 @@ export default function MedusaApp() {
           untFile={untFile}
           formValues={formValues}
           formErrors={formErrors}
-          modeLocked={modeLocked}
           submit={submit}
           onFormChange={handleFormChange}
-          onLoadTestParameters={handleLoadTestParameters}
+          showAdvanced={showAdvanced}
+          onShowAdvancedChange={(open) => dispatch({ type: 'showAdvanced', open })}
+          onLoadTemplateParameters={handleLoadTemplateParameters}
           onBack={() => setStep(1)}
           onNext={() => handleRunSimulation()}
         />

@@ -5,12 +5,12 @@ import { MAX_GM_SIMULATIONS } from '@/common/worker';
 const fmt = (value: number) => value.toLocaleString();
 
 // What a general mode run will simulate, kept up to date as the parameters change, so a search
-// that cannot run is plain before Run Simulation is pressed.
+// that cannot run is plain before Run MEDUSA is pressed.
 export default function GmSearchPreview({ plan }: { plan: GmPlan | null }) {
   if (!plan) {
     return (
       <Alert severity="info" sx={{ mt: 3 }}>
-        Fill in NPG, the treated end time and the effective dose to see what general mode will simulate.
+        Fill in NPG, the treated end time and the effective dose to see what the general model (GM) will simulate.
       </Alert>
     );
   }

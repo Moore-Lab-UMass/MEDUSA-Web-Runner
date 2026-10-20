@@ -1,6 +1,6 @@
+// The run mode isn't a field: like MEDUSA, the form works it out from the drug parameters given
+// (see formMode in src/common/parameters.ts).
 export interface FormValues {
-  // The mode the user picked, which decides the parameters asked for.
-  mode: RunMode;
   npg: string;
   t_end_unt: string;
   t_end_tr: string;
@@ -30,7 +30,7 @@ export interface UploadedFile {
 
 export type Step = 1 | 2 | 3 | 4;
 
-// Where a submission is between "Run Simulation" and landing on the run page.
+// Where a submission is between "Run MEDUSA" and landing on the run page.
 export type SubmitState =
   | { phase: 'idle'; error?: string }
   | { phase: 'creating' }

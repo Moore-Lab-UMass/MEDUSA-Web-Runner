@@ -20,7 +20,7 @@ interface TemplateCardConfig {
 const CARDS: TemplateCardConfig[] = [
   {
     mode: 'full',
-    title: 'Fully Parameterized Mode',
+    title: 'Fully Parameterized Model (FP)',
     description:
       "Best when every rate of the drug's response is known (NPG, GRdrug1, Do, GRdrug2, DRdrug). Loads a sample screen — triptolide (TRP) on U2OS cells — and runs it immediately.",
     cta: 'Run sample analysis',
@@ -28,10 +28,10 @@ const CARDS: TemplateCardConfig[] = [
   },
   {
     mode: 'gm',
-    title: 'General Mode',
+    title: 'General Model (GM)',
     description:
-      "Use when some or all of the drug's rates are unknown. Needs only NPG and the effective dose (ED), and returns a distribution of possible solutions per gene. Loads the same sample into Set Parameters for review.",
-    cta: 'Review sample parameters',
+      "Use when some or all of the drug's rates are unknown. Needs only NPG and the effective dose (ED), and returns a distribution of possible solutions per gene. Loads the same sample and runs it immediately.",
+    cta: 'Run sample analysis',
     icon: <LeaderboardIcon sx={{ fontSize: 22, color: 'primary.main' }} />,
   },
 ];

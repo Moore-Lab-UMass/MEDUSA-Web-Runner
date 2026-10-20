@@ -34,7 +34,7 @@ interface Props {
   onNewAnalysis: () => void;
 }
 
-const MODE_LABELS = { full: 'Fully parameterized', gm: 'General' };
+const MODE_LABELS = { full: 'Fully parameterized model (FP)', gm: 'General model (GM)' };
 
 // Below md the grey results card doesn't grow to fill the page (see Results' own sx below), so the
 // panes fall back to a fixed height here instead of filling it.
@@ -246,7 +246,7 @@ export default function Results({ runId, parameters, results, surface, samples, 
             <Typography variant="h5">Results overview</Typography>
             <Typography sx={{ fontSize: 13, color: '#888', overflowWrap: 'anywhere' }}>
               Run {runId}
-              {results.status === 'ready' && ` · ${MODE_LABELS[results.mode]} mode`}
+              {results.status === 'ready' && ` · ${MODE_LABELS[results.mode]}`}
             </Typography>
           </Box>
           <Button
@@ -273,7 +273,7 @@ export default function Results({ runId, parameters, results, surface, samples, 
         )}
         {results.status === 'ready' && !results.results && (
           <Alert severity="info">
-            This run wrote no summary table, as general mode runs from before stats were always on did not. Its
+            This run wrote no summary table, as general model (GM) runs from before stats were always on did not. Its
             output files are under Download Output Files.
           </Alert>
         )}

@@ -1,9 +1,19 @@
 import { FormErrors, FormValues, RunMode, RunParameters } from '@/types';
-import { DEFAULT_ED_ERR, DEFAULT_SIM_PERM, gmSearch, largestFittingNumIter } from './gmSearch';
+import { DEFAULT_ED_ERR, DEFAULT_NUM_ITER, DEFAULT_SIM_PERM, gmSearch, largestFittingNumIter } from './gmSearch';
 import { MAX_GM_COMBINATIONS, MAX_GM_SIMULATIONS } from './worker';
 
 const DRUG_FIELDS = ['grdrug1', 'do_val', 'grdrug2', 'drdrug'] as const;
 const GENE_LEVELS = ['median', 'mean', 'min', 'max'] as const;
+
+// MEDUSA's own defaults (medusa/cli.py) for the optional parameters, which a blank one falls back
+// to. The templates fill them in.
+export const MEDUSA_DEFAULTS = {
+  t_start: '0',
+  ed_err: String(DEFAULT_ED_ERR),
+  sim_perm: String(DEFAULT_SIM_PERM),
+  num_iter: String(DEFAULT_NUM_ITER),
+  bootstraps: '1000000',
+} satisfies Partial<FormValues>;
 
 // Blank means "not supplied", which is different from zero.
 function parseNumber(value: string): number | undefined | null {
@@ -16,6 +26,12 @@ function parseNumber(value: string): number | undefined | null {
 export function deriveMode(parameters: RunParameters): RunMode {
   const { GRdrug1, Do, GRdrug2, DRdrug } = parameters;
   return [GRdrug1, Do, GRdrug2, DRdrug].every((value) => value !== undefined) ? 'full' : 'gm';
+}
+
+// The mode the form will run in: MEDUSA has no mode flag, and runs fully parameterized when all
+// four drug parameters are given, and GM otherwise.
+export function formMode(form: FormValues): RunMode {
+  return DRUG_FIELDS.every((field) => form[field].trim() !== '') ? 'full' : 'gm';
 }
 
 // What a general mode run will do, worked out before it is submitted.
@@ -82,19 +98,14 @@ export function buildParameters(form: FormValues): {
     errors.t_start = 'Must be less than the untreated end time';
   }
 
-  // MEDUSA has no mode flag: it runs fully parameterized when all four drug parameters are set,
-  // and GM otherwise. So the mode picked decides which of them are required. GM uses any it is
-  // given to narrow its search, but needs ED, and at least one of the four left out.
-  const fullMode = form.mode === 'full';
-  const GRdrug1 = number('grdrug1', 'nonnegative', fullMode);
-  const Do = number('do_val', 'nonnegative', fullMode);
-  const GRdrug2 = number('grdrug2', 'nonnegative', fullMode);
-  const DRdrug = number('drdrug', 'nonnegative', fullMode);
-  if (!fullMode && [GRdrug1, Do, GRdrug2, DRdrug].every((value) => value !== undefined)) {
-    for (const field of DRUG_FIELDS) errors[field] = 'Leave at least one blank in general mode';
-  }
+  // GM uses any drug parameters it is given to narrow its search, but needs ED.
+  const fullMode = formMode(form) === 'full';
+  const GRdrug1 = number('grdrug1', 'nonnegative');
+  const Do = number('do_val', 'nonnegative');
+  const GRdrug2 = number('grdrug2', 'nonnegative');
+  const DRdrug = number('drdrug', 'nonnegative');
 
-  // Parameters only one mode reads are left out of the other, as the form hides them.
+  // Parameters only one mode reads are left out of the other, as MEDUSA would ignore them.
   // ED is a relative viability: treated cells over untreated at the end.
   const ED = fullMode ? undefined : number('ed', 'positive', true);
   const ED_err = fullMode ? undefined : number('ed_err', 'nonnegative');

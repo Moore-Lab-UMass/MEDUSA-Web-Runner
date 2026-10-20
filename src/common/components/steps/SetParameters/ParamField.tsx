@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
@@ -9,17 +10,18 @@ export default function ParamField({
   tooltip,
   value,
   onChange,
-  placeholder,
   width,
   error,
+  options,
 }: {
   label: string;
   tooltip?: string;
   value: string;
   onChange: (value: string) => void;
-  placeholder?: string;
   width?: number | string;
   error?: string;
+  // Makes the field a select of these values.
+  options?: string[];
 }) {
   return (
     <Box>
@@ -32,15 +34,19 @@ export default function ParamField({
         )}
       </Box>
       <TextField
+        select={!!options}
         fullWidth
         size="small"
-        placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         error={!!error}
         helperText={error}
         sx={{ bgcolor: '#fff', width: '100%', ...(width ? { maxWidth: { xs: '100%', sm: width } } : {}) }}
-      />
+      >
+        {options?.map((v) => (
+          <MenuItem key={v} value={v}>{v}</MenuItem>
+        ))}
+      </TextField>
     </Box>
   );
 }
