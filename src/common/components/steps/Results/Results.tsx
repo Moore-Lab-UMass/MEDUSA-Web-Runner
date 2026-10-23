@@ -121,6 +121,33 @@ function totalTab(rows: GeneRow[]): GeneTab {
   };
 }
 
+// How many of the genes missing from the results the gene list tab's tooltip names.
+const MISSING_SHOWN = 5;
+
+// The genes the run's gene_list asked for, in its order, as the first tab and so the one that
+// opens. Matched case-insensitively, as MEDUSA matches them; any not in the results are named in
+// the tooltip, since MEDUSA skips them without a word. Null for a run without a gene list.
+function geneListTab<Row extends GeneRow>(
+  rows: Row[],
+  geneList: string[] | undefined,
+): (GeneTab & { genes: Row[] }) | null {
+  if (!geneList) return null;
+  const byName = new Map(rows.map((row) => [row.gene.toLowerCase(), row]));
+  const genes: Row[] = [];
+  const missing: string[] = [];
+  for (const name of geneList) {
+    const row = byName.get(name.toLowerCase());
+    if (row) genes.push(row);
+    else missing.push(name);
+  }
+  let description = `The genes given for this run: ${genes.length.toLocaleString()} of ${geneList.length.toLocaleString()} are in its results.`;
+  if (missing.length > 0) {
+    const more = missing.length - MISSING_SHOWN;
+    description += ` Not found: ${missing.slice(0, MISSING_SHOWN).join(', ')}${more > 0 ? ` and ${more.toLocaleString()} more` : ''}.`;
+  }
+  return { label: 'Your Genes', title: 'Your Gene List', description, count: genes.length.toLocaleString(), genes };
+}
+
 interface FullBodyProps {
   results: Extract<RunResults, { mode: 'full' }>;
   parameters: RunParameters | null;
@@ -132,10 +159,13 @@ function FullResultsBody({ results, parameters, surface }: FullBodyProps) {
   const significant = results.rows.filter(
     (row) => !row.control && row.deathFdr !== null && row.deathFdr < SIGNIFICANCE_FDR,
   );
+  const geneList = parameters?.gene_list;
+  const listed = useMemo(() => geneListTab(results.rows, geneList), [results.rows, geneList]);
   const table = (
     <TableTabs
       columns={fullColumns(results.hasStats)}
       tabs={[
+        ...(listed ? [listed] : []),
         { ...PRO_DEATH, count: String(proDeath.length), genes: proDeath },
         { ...ANTI_DEATH, count: String(antiDeath.length), genes: antiDeath },
         // Runs from before stats were always on have no FDR to count by, and so nothing to list.
@@ -161,7 +191,7 @@ function FullResultsBody({ results, parameters, surface }: FullBodyProps) {
           genes={results.rows}
           proDeath={proDeath}
           antiDeath={antiDeath}
-          geneList={parameters?.gene_list}
+          geneList={geneList}
           surface={surface}
         />
       ),
@@ -186,20 +216,20 @@ function GmResultsBody({ results, parameters, samples }: GmBodyProps) {
   // run's first gene_list gene, or failing that its top pro-death hit, as MEDUSA's own plots start.
   const [picked, setPicked] = useState<string | null>(null);
   const geneList = parameters?.gene_list;
-  // gene_list is matched case-insensitively, as MEDUSA matches it.
-  const firstListed = useMemo(() => {
-    if (!geneList) return undefined;
-    const byName = new Map(results.rows.map((row) => [row.gene.toLowerCase(), row]));
-    return geneList.map((gene) => byName.get(gene.toLowerCase())).find((row) => row !== undefined);
-  }, [geneList, results.rows]);
+  const listed = useMemo(() => geneListTab(results.rows, geneList), [results.rows, geneList]);
   const selected =
-    results.rows.find((row) => row.gene === picked) ?? firstListed ?? proDeath[0] ?? results.rows[0] ?? null;
+    results.rows.find((row) => row.gene === picked) ??
+    listed?.genes[0] ??
+    proDeath[0] ??
+    results.rows[0] ??
+    null;
 
   const table = (
     <TableTabs
       columns={GM_COLUMNS}
       selection={selected ? { gene: selected.gene, onSelect: setPicked } : undefined}
       tabs={[
+        ...(listed ? [listed] : []),
         { ...PRO_DEATH, count: String(proDeath.length), genes: proDeath },
         { ...ANTI_DEATH, count: String(antiDeath.length), genes: antiDeath },
         {

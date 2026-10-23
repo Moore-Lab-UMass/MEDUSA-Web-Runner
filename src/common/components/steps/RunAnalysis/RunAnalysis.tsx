@@ -8,7 +8,7 @@ import ArrowForwardIcon from '@mui/icons-material/KeyboardArrowRight';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { LogChunk, RunParameters, RunState } from '@/types';
 import JobHeader from './JobHeader';
-import RunDetails from './RunDetails';
+import RunDetails, { RETENTION_HOURS } from './RunDetails';
 import RunProgress from './RunProgress';
 import LiveLog from './LiveLog';
 import { logProgress } from './logProgress';
@@ -31,9 +31,10 @@ interface Props {
   onViewResults: () => void;
 }
 
-function formatDate(iso: string | null | undefined) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleString('en-US', {
+// An ISO string or epoch milliseconds.
+function formatDate(date: string | number | null | undefined) {
+  if (!date) return '—';
+  return new Date(date).toLocaleString('en-US', {
     month: '2-digit',
     day: '2-digit',
     year: 'numeric',
@@ -97,6 +98,9 @@ export default function RunAnalysis({
   // Only ever formatted in the browser: `run` is null until the client has fetched it, so the
   // server always renders the placeholder and the viewer's own locale and time zone are safe.
   const dateCreated = formatDate(run?.createdAt);
+  const savedUntil = run?.createdAt
+    ? formatDate(Date.parse(run.createdAt) + RETENTION_HOURS * 3_600_000)
+    : null;
 
   return (
     <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', flex: { md: 1 } }}>
@@ -108,6 +112,7 @@ export default function RunAnalysis({
           numIter={runSetting(parameters, parameters?.num_iter, DEFAULT_NUM_ITER)}
           bootstraps={runSetting(parameters, parameters?.bootstraps, DEFAULT_BOOTSTRAPS)}
           dateCreated={dateCreated}
+          savedUntil={savedUntil}
         />
         <RunProgress progress={progress} message={message} />
         <LiveLog chunks={logs} animate={animateLog} />

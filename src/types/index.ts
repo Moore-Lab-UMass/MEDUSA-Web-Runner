@@ -17,6 +17,8 @@ export interface FormValues {
   nont_id: string;
   max_guides_nont: string;
   bootstraps: string;
+  // The genes picked to highlight, one per line.
+  gene_list: string;
 }
 
 export type FormErrors = Partial<Record<keyof FormValues, string>>;
@@ -26,6 +28,8 @@ export interface UploadedFile {
   name: string;
   sizeMB: string;
   error?: string;
+  // The distinct names in its Gene column, which the gene list is picked from.
+  genes: string[];
 }
 
 export type Step = 1 | 2 | 3 | 4;

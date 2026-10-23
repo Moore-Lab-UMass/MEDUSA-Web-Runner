@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { Activity, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -60,17 +60,23 @@ export default function RunPage({ runId }: { runId: string }) {
 
   return (
     <StepLayout step={showResults ? 4 : 3} links={links}>
-      {showResults ? (
-        <Results
-          runId={runId}
-          parameters={parameters}
-          results={results}
-          surface={surface}
-          samples={samples}
-          onBack={() => setView('run')}
-          onNewAnalysis={handleNewAnalysis}
-        />
-      ) : (
+      {/* Both views stay mounted once there are results, the one not shown hidden by Activity, so
+          switching between them keeps the plot as drawn (no spinner, no replayed entrance), the
+          open tabs and legend, and the log's place. */}
+      {succeeded && (
+        <Activity mode={showResults ? 'visible' : 'hidden'}>
+          <Results
+            runId={runId}
+            parameters={parameters}
+            results={results}
+            surface={surface}
+            samples={samples}
+            onBack={() => setView('run')}
+            onNewAnalysis={handleNewAnalysis}
+          />
+        </Activity>
+      )}
+      <Activity mode={showResults ? 'hidden' : 'visible'}>
         <RunAnalysis
           runId={runId}
           run={run}
@@ -82,7 +88,7 @@ export default function RunPage({ runId }: { runId: string }) {
           onNewAnalysis={handleNewAnalysis}
           onViewResults={() => setView('results')}
         />
-      )}
+      </Activity>
     </StepLayout>
   );
 }

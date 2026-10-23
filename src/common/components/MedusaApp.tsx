@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import StepLayout from './StepLayout';
 import UploadFiles from './steps/UploadFiles/UploadFiles';
 import SetParameters from './steps/SetParameters/SetParameters';
-import { validateCsvFile } from './steps/UploadFiles/validateCsv';
+import { toUploadedFile } from './steps/UploadFiles/uploadedFile';
 import { createRun, getRun, startRun, uploadFile } from '@/common/medusaApi';
 import { buildParameters } from '@/common/parameters';
 import { addRunTiming, beginRunTimings } from '@/common/runTimings';
@@ -31,6 +31,8 @@ const DEFAULT_FORM: FormValues = {
   nont_id: 'NONT',
   max_guides_nont: '',
   bootstraps: '',
+  // Blank highlights the top hits.
+  gene_list: '',
 };
 
 // What the two steps collect: the files, the parameters, and which step is showing.
@@ -109,15 +111,16 @@ export default function MedusaApp() {
   const handleFormChange = (field: keyof FormValues, value: string) =>
     dispatch({ type: 'editForm', field, value });
 
-  // Either template's parameters, keeping the files already uploaded.
+  // Either template's parameters, keeping the files already uploaded and the genes picked for
+  // them, which no template has its own of.
   const handleLoadTemplateParameters = (mode: TemplateMode) =>
-    dispatch({ type: 'fillTemplate', values: templateFormValues(mode, DEFAULT_FORM) });
+    dispatch({
+      type: 'fillTemplate',
+      values: templateFormValues(mode, { ...DEFAULT_FORM, gene_list: formValues.gene_list }),
+    });
 
-  const handleFileDrop = async (type: 'trt' | 'unt', file: File) => {
-    const sizeMB = (file.size / 1024 / 1024).toFixed(1) + ' MB';
-    const error = await validateCsvFile(file);
-    dispatch({ type: 'setFile', which: type, file: { file, name: file.name, sizeMB, error } });
-  };
+  const handleFileDrop = async (type: 'trt' | 'unt', file: File) =>
+    dispatch({ type: 'setFile', which: type, file: await toUploadedFile(file) });
 
   const handleFileRemove = (type: 'trt' | 'unt') => dispatch({ type: 'setFile', which: type, file: null });
 

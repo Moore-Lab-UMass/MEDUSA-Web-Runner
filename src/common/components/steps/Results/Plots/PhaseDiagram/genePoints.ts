@@ -4,6 +4,7 @@ import { FullGeneRow } from '@/common/results';
 import { PLOT_COLORS } from '../plotColors';
 
 // The kinds of point on the plot, in the legend's order. Each is a chip that can be switched off.
+// The hits are the top hits unless the run's gene list is what's highlighted.
 export const POINT_KINDS = [
   { kind: 'hits', label: 'Top hits', color: PLOT_COLORS.highlight },
   { kind: 'controls', label: 'Non-targeting controls', color: PLOT_COLORS.control },
@@ -13,7 +14,7 @@ export type PointKind = (typeof POINT_KINDS)[number]['kind'];
 
 export type GeneMetadata = {
   gene: string;
-  group: 'Anti-Death' | 'Pro-Death' | 'Selected' | 'Control' | 'Gene';
+  group: 'Anti-Death' | 'Pro-Death' | 'Your Genes' | 'Control' | 'Gene';
   kind: PointKind;
   // The surface's L2FC TRvUT where the gene sits. Null without a surface, or where it has none.
   l2fc: number | null;
@@ -21,8 +22,8 @@ export type GeneMetadata = {
 
 export type GenePoint = Point<GeneMetadata>;
 
-// Which genes are highlighted, and as what: the run's gene_list where it has one, and its top
-// hits otherwise.
+// Which genes are highlighted, and as what: the gene list where one is given, and the top hits
+// otherwise.
 function highlightedGroups(
   genes: FullGeneRow[],
   proDeath: FullGeneRow[],
@@ -32,7 +33,7 @@ function highlightedGroups(
   const groups = new Map<string, GeneMetadata['group']>();
   if (geneList) {
     const requested = new Set(geneList.map((gene) => gene.toLowerCase()));
-    for (const { gene } of genes) if (requested.has(gene.toLowerCase())) groups.set(gene, 'Selected');
+    for (const { gene } of genes) if (requested.has(gene.toLowerCase())) groups.set(gene, 'Your Genes');
   } else {
     for (const { gene } of proDeath) groups.set(gene, 'Pro-Death');
     for (const { gene } of antiDeath) groups.set(gene, 'Anti-Death');
