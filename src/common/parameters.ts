@@ -49,6 +49,35 @@ export interface GmPlan {
 
 const fmt = (value: number) => value.toLocaleString();
 
+// The API's limits on gene_list (medusa-api/src/schemas/run.ts).
+export const MAX_GENE_LIST = 1000;
+const MAX_GENE_NAME = 128;
+
+// The genes in the gene list box: split on commas, semicolons and whitespace, so a pasted column,
+// a typed list and an uploaded one-per-line file all read the same. Quotes from a CSV are dropped,
+// and repeats, which MEDUSA matches case-insensitively, are kept once.
+export function parseGeneList(text: string): string[] {
+  const seen = new Set<string>();
+  const genes: string[] = [];
+  for (const token of text.split(/[\s,;]+/)) {
+    const gene = token.replace(/^["']+|["']+$/g, '');
+    const key = gene.toLowerCase();
+    if (gene === '' || seen.has(key)) continue;
+    seen.add(key);
+    genes.push(gene);
+  }
+  return genes;
+}
+
+function geneListError(genes: string[]): string | undefined {
+  if (genes.length > MAX_GENE_LIST) return `${fmt(genes.length)} genes, past the ${fmt(MAX_GENE_LIST)} allowed`;
+  const long = genes.find((gene) => gene.length > MAX_GENE_NAME);
+  if (long) return `"${long.slice(0, 24)}…" is longer than ${MAX_GENE_NAME} characters`;
+  const bad = genes.find((gene) => /[/\\\x00-\x1f\x7f]/.test(gene));
+  if (bad) return `"${bad}" cannot contain slashes or control characters`;
+  return undefined;
+}
+
 // Turns the form's strings into the API's parameter object, mirroring the API's own validation
 // (medusa-api/src/schemas/run.ts) so mistakes surface on the field instead of as a 422. A general
 // mode run is also checked against what the worker can hold, which the API does not do: past
@@ -158,6 +187,12 @@ export function buildParameters(form: FormValues): {
 
   const gene_level = GENE_LEVELS.find((level) => level === form.gene_level);
 
+  // Blank leaves the plots to MEDUSA's top hits.
+  const genes = parseGeneList(form.gene_list);
+  const geneError = geneListError(genes);
+  if (geneError) errors.gene_list = geneError;
+  const gene_list = genes.length > 0 && !geneError ? genes : undefined;
+
   const parameters: RunParameters = {
     NPG: NPG ?? 0,
     T_end_unt: T_end_unt ?? 0,
@@ -175,6 +210,7 @@ export function buildParameters(form: FormValues): {
     max_guides_nont: count('max_guides_nont'),
     gene_level,
     nont_id: nont_id || undefined,
+    gene_list,
     // The site always asks for both: stats gives each mode its summary table, and GM draws no
     // histograms without it.
     stats: true,

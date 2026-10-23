@@ -17,6 +17,8 @@ import { FormErrors, FormValues, RunMode, SubmitState, UploadedFile } from '@/ty
 import FileSummary from './FileSummary';
 import ParamField from './ParamField';
 import GmSearchPreview from './GmSearchPreview';
+import GeneListField from './GeneListField';
+import { sharedGenes } from '../UploadFiles/readGenes';
 import RunModeLabel from './RunModeLabel';
 import LoadTemplateButton from './LoadTemplateButton';
 import { TemplateMode } from '@/common/templates';
@@ -100,15 +102,21 @@ const TECHNICAL_FIELDS: FieldConfig[] = [
 ];
 
 // Everything in the collapsible Optional / Advanced section.
-const ADVANCED_FIELDS = [...OPTIONAL_FIELDS, ...GM_FIELDS, ...TECHNICAL_FIELDS].map(({ field }) => field);
+const ADVANCED_FIELDS: (keyof FormValues)[] = [
+  ...[...OPTIONAL_FIELDS, ...GM_FIELDS, ...TECHNICAL_FIELDS].map(({ field }) => field),
+  'gene_list',
+];
 
 // Names a field in the list of what stops the run.
-const FIELD_LABELS = Object.fromEntries(
-  [...REQUIRED_FIELDS, ...OPTIONAL_FIELDS, ...GM_FIELDS, ...TECHNICAL_FIELDS].map(({ field, label }) => [
-    field,
-    label.replace('*', ''),
-  ]),
-) as Record<keyof FormValues, string>;
+const FIELD_LABELS = {
+  ...Object.fromEntries(
+    [...REQUIRED_FIELDS, ...OPTIONAL_FIELDS, ...GM_FIELDS, ...TECHNICAL_FIELDS].map(({ field, label }) => [
+      field,
+      label.replace('*', ''),
+    ]),
+  ),
+  gene_list: 'Genes to highlight',
+} as Record<keyof FormValues, string>;
 
 const RUN_LABELS: Record<RunMode, string> = { full: 'Run MEDUSA (FP)', gm: 'Run MEDUSA (GM)' };
 
@@ -206,6 +214,10 @@ export default function SetParameters({
   const drugMode = formMode(formValues);
   const mode = issues.length === 0 ? drugMode : null;
   const gridProps = { formValues, formErrors, onFormChange };
+  const pickableGenes = useMemo(
+    () => sharedGenes(trtFile?.genes ?? [], untFile?.genes ?? [], formValues.nont_id.trim()),
+    [trtFile, untFile, formValues.nont_id],
+  );
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -272,6 +284,14 @@ export default function SetParameters({
             * If missing, MEDUSA runs the general model (GM) and effective dose is required.
           </Typography>
           <FieldGrid fields={TECHNICAL_FIELDS} columns={2} {...gridProps} />
+
+          <Typography sx={sectionHeadingSx}>Plots</Typography>
+          <GeneListField
+            value={formValues.gene_list}
+            onChange={(v) => onFormChange('gene_list', v)}
+            error={formErrors.gene_list}
+            genes={pickableGenes}
+          />
         </Collapse>
       </Paper>
 

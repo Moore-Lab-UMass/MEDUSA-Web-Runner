@@ -1,6 +1,8 @@
 'use client';
 import { useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { ChipLegend, getSharedDomains, RampRange, ScatterPlot, sweptValues } from '@weng-lab/visualization';
 import { PhaseSurface, surfaceOver } from '@/common/phaseSurface';
 import { FullGeneRow } from '@/common/results';
@@ -27,7 +29,8 @@ interface Props {
   genes: FullGeneRow[];
   proDeath: FullGeneRow[];
   antiDeath: FullGeneRow[];
-  // The run's gene_list parameter. When set it replaces the top hits as what gets highlighted.
+  // The run's gene_list parameter. When set it is what gets highlighted, until the reader switches
+  // back to the top hits.
   geneList?: string[];
   // The run's simulation, drawn behind the genes. Null when it has no grid to draw.
   surface: PhaseSurface | null;
@@ -35,9 +38,12 @@ interface Props {
 
 // The fully parameterized phase diagram: log2 relative growth rate against log2 relative death rate.
 export default function PhaseDiagram({ genes, proDeath, antiDeath, geneList, surface }: Props) {
+  // A run with a gene list highlights it, and can switch to its top hits and back.
+  const [showTopHits, setShowTopHits] = useState(false);
+  const highlighted = showTopHits ? undefined : geneList;
   const pointData = useMemo(
-    () => genePoints(genes, proDeath, antiDeath, geneList, surface),
-    [genes, proDeath, antiDeath, geneList, surface],
+    () => genePoints(genes, proDeath, antiDeath, highlighted, surface),
+    [genes, proDeath, antiDeath, highlighted, surface],
   );
   // The domains the plot would settle on itself, taken here so the colors can be fitted to them.
   const domains = useMemo(() => getSharedDomains(pointData), [pointData]);
@@ -72,7 +78,9 @@ export default function PhaseDiagram({ genes, proDeath, antiDeath, geneList, sur
     });
   const shownPoints = useMemo(() => withHidden(pointData, hidden), [pointData, hidden]);
   const counts = useMemo(() => kindCounts(pointData), [pointData]);
-  const hitsTooltip = geneList ? "The genes in the run's gene list" : 'The top pro-death and anti-death genes';
+  const hitsChip = highlighted
+    ? { label: 'Your genes', tooltip: 'The genes given for this run' }
+    : { label: 'Top hits', tooltip: 'The top pro-death and anti-death genes' };
   // Hovering a chip spotlights its points, as sweeping the colorbar does its genes.
   const chipPoints = useMemo(
     () => (chipHovered ? shownPoints.filter(({ metaData }) => metaData?.kind === chipHovered) : undefined),
@@ -81,21 +89,35 @@ export default function PhaseDiagram({ genes, proDeath, antiDeath, geneList, sur
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
-      {/* At the top right, where the histogram has its legend. */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <ChipLegend
-          groups={POINT_KINDS.map(({ kind, label, color }) => ({
-            value: kind,
-            label,
-            color,
-            count: counts[kind],
-            tooltip: kind === 'hits' ? hitsTooltip : undefined,
-          }))}
-          hidden={hidden}
-          onToggle={toggle}
-          highlighted={chipHovered ?? pointHovered}
-          onHover={(value) => setChipHovered(value as PointKind | null)}
-        />
+      {/* The switch between the gene list and the top hits on the left, the legend at the top
+          right, where the histogram has its own. */}
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
+        {geneList && (
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<SwapHorizIcon />}
+            onClick={() => setShowTopHits((prev) => !prev)}
+            sx={{ textTransform: 'none' }}
+          >
+            {showTopHits ? 'Highlight your genes' : 'Highlight top hits'}
+          </Button>
+        )}
+        <Box sx={{ ml: 'auto' }}>
+          <ChipLegend
+            groups={POINT_KINDS.map(({ kind, label, color }) => ({
+              value: kind,
+              label: kind === 'hits' ? hitsChip.label : label,
+              color,
+              count: counts[kind],
+              tooltip: kind === 'hits' ? hitsChip.tooltip : undefined,
+            }))}
+            hidden={hidden}
+            onToggle={toggle}
+            highlighted={chipHovered ?? pointHovered}
+            onHover={(value) => setChipHovered(value as PointKind | null)}
+          />
+        </Box>
       </Box>
       <PlotFrame margin={PLOT_MARGIN}>
         {({ width, height }) => (

@@ -1,6 +1,6 @@
 import { FormValues, RunMode, UploadedFile } from '@/types';
 import { MEDUSA_DEFAULTS } from './parameters';
-import { validateCsvFile } from './components/steps/UploadFiles/validateCsv';
+import { toUploadedFile } from './components/steps/UploadFiles/uploadedFile';
 
 // There is a template for each mode, whose parameters run in it.
 export type TemplateMode = RunMode;
@@ -28,10 +28,7 @@ async function fetchTemplateFile(path: string, name: string): Promise<UploadedFi
   const response = await fetch(path);
   if (!response.ok) throw new Error('Template sample files are not available yet.');
   const blob = await response.blob();
-  const file = new File([blob], name, { type: 'text/csv' });
-  const error = await validateCsvFile(file);
-  const sizeMB = (file.size / 1024 / 1024).toFixed(1) + ' MB';
-  return { file, name, sizeMB, error };
+  return toUploadedFile(new File([blob], name, { type: 'text/csv' }));
 }
 
 export async function loadTemplateFiles(): Promise<{ trt: UploadedFile; unt: UploadedFile }> {
