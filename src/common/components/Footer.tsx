@@ -1,50 +1,35 @@
 'use client';
 import Image from 'next/image';
+import NextLink from 'next/link';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 import Divider from '@mui/material/Divider';
 
-const COLUMNS = [
+// An item with no href is plain text. External links open in a new tab.
+type FooterItem = { label: string; href?: string; external?: boolean };
+
+const COLUMNS: { heading: string; items: FooterItem[] }[] = [
   {
-    id: 'col-1',
-    heading: 'Lorem ipsum',
+    heading: 'Simulation Tool',
     items: [
-      { id: 'col-1-item-1', label: 'Lorem ipsum' },
-      { id: 'col-1-item-2', label: 'Lorem ipsum' },
-      { id: 'col-1-item-3', label: 'Lorem ipsum' },
+      { label: 'Home', href: '/' },
+      { label: 'Run a simulation', href: '/simulator' },
     ],
   },
   {
-    id: 'col-2',
-    heading: 'Lorem ipsum',
+    heading: 'Project',
     items: [
-      { id: 'col-2-item-1', label: 'Lorem ipsum' },
-      { id: 'col-2-item-2', label: 'Lorem ipsum' },
+      { label: 'Source code', href: 'https://github.com/Moore-Lab-UMass/MEDUSA-Web-Runner', external: true },
     ],
   },
   {
-    id: 'col-3',
-    heading: 'Lorem ipsum',
-    items: [
-      { id: 'col-3-item-1', label: 'Lorem ipsum' },
-      { id: 'col-3-item-2', label: 'Lorem ipsum' },
-      { id: 'col-3-item-3', label: 'Lorem ipsum' },
-      { id: 'col-3-item-4', label: 'Lorem ipsum' },
-    ],
-  },
-  {
-    id: 'col-4',
-    heading: 'Lorem ipsum',
-    items: [
-      { id: 'col-4-item-1', label: 'Lorem ipsum' },
-      { id: 'col-4-item-2', label: 'Lorem ipsum' },
-      { id: 'col-4-item-3', label: 'Lorem ipsum' },
-    ],
+    heading: 'Labs',
+    items: [{ label: 'Lee Lab' }, { label: 'Moore Lab' }, { label: 'UMass Chan Medical School' }],
   },
 ];
 
-const bottomLinkSx = { fontSize: 12, color: '#409393', '&:hover': { color: 'secondary.main' } };
+const itemSx = { fontSize: 11, color: 'primary.contrastText', opacity: 0.8 };
 
 export default function Footer() {
   return (
@@ -84,21 +69,39 @@ export default function Footer() {
 
         <Box sx={{ display: 'flex', flexWrap: 'wrap', rowGap: 3 }}>
           {COLUMNS.map((col) => (
-            <Box key={col.id} sx={{ width: { xs: '50%', sm: 168 } }}>
+            <Box key={col.heading} sx={{ width: { xs: '50%', sm: 168 } }}>
               <Typography sx={{ fontSize: 13, mb: 2 }}>
                 {col.heading}
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {col.items.map((item) => (
-                  <Link
-                    key={item.id}
-                    href="#"
-                    underline="hover"
-                    sx={{ fontSize: 11, color: 'primary.contrastText', opacity: 0.8, '&:hover': { opacity: 1 } }}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+                {col.items.map(({ label, href, external }) =>
+                  !href ? (
+                    <Typography key={label} sx={itemSx}>
+                      {label}
+                    </Typography>
+                  ) : external ? (
+                    <Link
+                      key={label}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      underline="hover"
+                      sx={{ ...itemSx, '&:hover': { opacity: 1 } }}
+                    >
+                      {label}
+                    </Link>
+                  ) : (
+                    <Link
+                      key={label}
+                      component={NextLink}
+                      href={href}
+                      underline="hover"
+                      sx={{ ...itemSx, '&:hover': { opacity: 1 } }}
+                    >
+                      {label}
+                    </Link>
+                  ),
+                )}
               </Box>
             </Box>
           ))}
@@ -107,28 +110,10 @@ export default function Footer() {
 
       <Divider sx={{ mx: { xs: 2, sm: 4, md: 5.5 }, borderColor: 'primary.main' }} />
 
-      <Box
-        sx={{
-          px: { xs: 2, sm: 4, md: 14 },
-          py: 1.5,
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 2,
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
+      <Box sx={{ px: { xs: 2, sm: 4, md: 14 }, py: 1.5 }}>
         <Typography sx={{ fontSize: 12, color: '#409393' }}>
-          Copyright © lorem ipsum
+          MEDUSA is a joint project of the Lee Lab and the Moore Lab at UMass Chan Medical School.
         </Typography>
-        <Box sx={{ display: 'flex', gap: { xs: 3, sm: 9 }, mr: { md: 15 } }}>
-          <Link href="#" underline="hover" sx={bottomLinkSx}>
-            Privacy & Policy
-          </Link>
-          <Link href="#" underline="hover" sx={bottomLinkSx}>
-            Terms & Condition
-          </Link>
-        </Box>
       </Box>
     </Box>
   );
