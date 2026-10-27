@@ -4,15 +4,9 @@ import NextLink from 'next/link';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 
-const NAV_LINKS = [
-  { label: 'Simulation Tool', href: '/simulator' },
-  { label: 'About', href: '#' },
-  { label: 'Help', href: '#' },
-];
-
+// Nav links (Simulation Tool, About, Help) and Sign in are removed for now; see git history to restore.
 export default function Header() {
   return (
     <AppBar position="sticky" elevation={4} sx={{ top: 0, zIndex: (theme) => theme.zIndex.appBar, bgcolor: 'primary.dark' }}>
@@ -43,37 +37,6 @@ export default function Header() {
             MEDUSA
           </Typography>
         </Box>
-        <Box sx={{ flex: 1 }} />
-        <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 0.5 }}>
-          {NAV_LINKS.map(({ label, href }) => (
-            <Button
-              key={label}
-              component={NextLink}
-              href={href}
-              sx={{
-                color: 'rgba(255,255,255,0.85)',
-                fontSize: 13,
-                '&:hover': { color: '#fff', bgcolor: 'rgba(255,255,255,0.06)' },
-              }}
-            >
-              {label}
-            </Button>
-          ))}
-        </Box>
-        <Button
-          variant="contained"
-          color="secondary"
-          disableElevation
-          sx={{
-            fontWeight: 700,
-            fontSize: 13,
-            px: 2.5,
-            borderRadius: 1.5,
-            flexShrink: 0,
-          }}
-        >
-          Sign in
-        </Button>
       </Toolbar>
     </AppBar>
   );
