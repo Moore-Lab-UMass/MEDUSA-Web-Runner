@@ -19,7 +19,7 @@ export default function Header() {
       <Toolbar sx={{ minHeight: 64, px: { xs: 2, sm: 4 }, gap: { xs: 1, sm: 3 } }}>
         <Box
           component={NextLink}
-          href="/"
+          href="/simulator"
           sx={{ display: 'flex', alignItems: 'center', gap: 2, textDecoration: 'none' }}
         >
           <Box

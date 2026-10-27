@@ -12,10 +12,7 @@ type FooterItem = { label: string; href?: string; external?: boolean };
 const COLUMNS: { heading: string; items: FooterItem[] }[] = [
   {
     heading: 'Simulation Tool',
-    items: [
-      { label: 'Home', href: '/' },
-      { label: 'Run a simulation', href: '/simulator' },
-    ],
+    items: [{ label: 'Run a simulation', href: '/simulator' }],
   },
   {
     heading: 'Project',
